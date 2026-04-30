@@ -1,0 +1,13 @@
+# ─── Database Configuration ─────────────────────────────────────────────────
+# Скопируй этот файл как db.properties и заполни своими данными
+# ВАЖНО: db.properties добавлен в .gitignore — никогда не пушь реальные пароли!
+
+db.host=localhost
+db.port=3306
+db.name=messenger_db
+db.user=root
+db.password=YOUR_PASSWORD_HERE
+
+# Параметры пула соединений
+db.pool.minConnections=3
+db.pool.maxConnections=10
