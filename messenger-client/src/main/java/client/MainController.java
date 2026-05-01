@@ -3,7 +3,7 @@ package client;
 import com.messenger.model.*;
 import com.messenger.protocol.Packet;
 import com.messenger.protocol.PacketType;
-//import com.messenger.protocol.RegisterRequest; // Предполагаем, что он есть в протоколах
+import com.messenger.protocol.RegisterRequest;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -52,8 +52,8 @@ public class MainController implements NetworkListener {
 
         if (isRegistrationMode) {
             // Если в NetworkClient нет метода register, отправляем пакет напрямую
-            //RegisterRequest regReq = new RegisterRequest(login, email, password);
-            //JavaFXClientLauncher.networkClient.sendPacket(new Packet<>(PacketType.REGISTER_REQUEST, regReq));
+            RegisterRequest regReq = new RegisterRequest(login, email, password);
+            JavaFXClientLauncher.networkClient.sendPacket(new Packet<>(PacketType.REGISTER_REQUEST, regReq));
         } else {
             // Используем существующий метод твоего NetworkClient
             // В твоем клиенте параметры называются (email, passwordHash)
