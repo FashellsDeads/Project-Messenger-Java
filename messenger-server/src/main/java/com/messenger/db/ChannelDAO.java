@@ -6,9 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DAO для работы с таблицей channels.
- */
+
 public class ChannelDAO {
 
     private final DatabaseManager db = DatabaseManager.getInstance();
@@ -20,7 +18,6 @@ public class ChannelDAO {
     }
 
 
-    // ─── Найти канал по ID ────────────────────────────────────────────────────
     public Channel findById(int id) {
         String sql = "SELECT * FROM channels WHERE id = ?";
         Connection conn = null;
@@ -38,7 +35,6 @@ public class ChannelDAO {
         return null;
     }
 
-    // ─── Создать канал ────────────────────────────────────────────────────────
     public Channel save(Channel channel) {
         String sql = "INSERT INTO channels (name) VALUES (?)";
         Connection conn = null;

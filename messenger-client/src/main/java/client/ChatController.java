@@ -12,7 +12,6 @@ import java.util.List;
 
 public class ChatController implements NetworkListener {
 
-    // Элементы интерфейса из main.fxml
     @FXML private ListView<MessengerServer> serverList;
     @FXML private ListView<Channel> channelsList;
     @FXML private ListView<AbstractMessage> messagesList;
@@ -22,12 +21,10 @@ public class ChatController implements NetworkListener {
     private User currentUser;
     private Channel currentChannel;
 
-    // Списки данных, которые автоматически обновляют UI
     private final ObservableList<String> chatMessages = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
-        // Настраиваем отображение серверов (чтобы видеть название, а не адрес объекта)
         serverList.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(MessengerServer item, boolean empty) {
@@ -36,7 +33,6 @@ public class ChatController implements NetworkListener {
             }
         });
 
-        // Настраиваем отображение каналов
         channelsList.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(Channel item, boolean empty) {
@@ -54,7 +50,6 @@ public class ChatController implements NetworkListener {
         });
     }
 
-    // Метод для получения данных пользователя при переходе с экрана логина
     public void setUser(User user) {
         this.currentUser = user;
         System.out.println("Чат запущен для: " + user.getUsername());
@@ -65,18 +60,12 @@ public class ChatController implements NetworkListener {
         String text = messageInput.getText().trim();
         if (text.isEmpty() || currentChannel == null) return;
 
-        // Создаем сообщение (используя твою модель)
-        // Здесь можно использовать текстовое сообщение, наследуемое от AbstractMessage
         // Message msg = new Message(currentUser.getUsername(), text, currentChannel.getId());
 
-        // Отправка через сетевой клиент (раскомментируй, когда подключишь сокеты)
         // JavaFXClientLauncher.networkClient.sendMessage(msg);
 
         messageInput.clear();
-
-        // Временная визуализация (пока нет сервера)
         Platform.runLater(() -> {
-            // В реальной версии мы будем ждать подтверждения от сервера
             System.out.println("Отправлено: " + text);
         });
     }
@@ -85,9 +74,6 @@ public class ChatController implements NetworkListener {
         // Здесь будет запрос к серверу: networkClient.getHistory(channel.getId());
         System.out.println("Загрузка истории для канала: " + channel.getName());
     }
-
-    // --- Реализация NetworkListener ---
-    // Все изменения UI должны быть внутри Platform.runLater, так как сетевой поток - не поток JavaFX!
 
     @Override
     public void onMessageReceived(AbstractMessage message) {
@@ -141,8 +127,7 @@ public class ChatController implements NetworkListener {
 
     @FXML
     private void handleAddServer() {
-        // Создаем простое диалоговое окно для ввода данных
-        TextInputDialog dialog = new TextInputDialog("127.0.0.1");
+        TextInputDialog dialog = new TextInputDialog("");
         dialog.setTitle("Подключение к серверу");
         dialog.setHeaderText("Введите адрес нового сервера");
         dialog.setContentText("IP адрес:");
@@ -150,10 +135,8 @@ public class ChatController implements NetworkListener {
         dialog.showAndWait().ifPresent(ip -> {
             System.out.println("Попытка подключения к: " + ip);
 
-            // В будущем здесь будет вызов сетевого клиента:
             // JavaFXClientLauncher.networkClient.connectToNewServer(ip);
 
-            // Пока просто выведем статус для теста
             currentServerLabel.setText("Подключение к " + ip + "...");
         });
     }

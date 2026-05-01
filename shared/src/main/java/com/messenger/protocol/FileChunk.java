@@ -7,10 +7,10 @@ public class FileChunk implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String fileName;
-    private byte[] data;       // Сам кусочек файла (максимум 8192 байт)
-    private int chunkNumber;   // Порядковый номер кусочка
-    private boolean isLastChunk; // Флаг: это последний кусок?
-    private int channelId;     // В какой канал отправляем
+    private byte[] data;
+    private int chunkNumber;
+    private boolean isLastChunk;
+    private int channelId;
 
     public FileChunk(String fileName, byte[] data, int chunkNumber, boolean isLastChunk, int channelId) {
         this.fileName = fileName;

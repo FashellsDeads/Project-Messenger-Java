@@ -2,10 +2,6 @@ package com.messenger.protocol;
 
 import java.io.Serializable;
 
-/**
- * Данные для запроса входа.
- * Передаётся внутри Packet<LoginRequest>.
- */
 public class LoginRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;

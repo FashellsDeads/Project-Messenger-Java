@@ -9,37 +9,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-/**
- * Менеджер подключений к базе данных MySQL.
- *
- * OOP: Singleton — единственный экземпляр на всё приложение.
- * Реализует простой Connection Pool (пул соединений).
- * JDBC: управляет подключениями через DriverManager.
- */
+
 public class DatabaseManager {
 
-    // ─── Singleton ────────────────────────────────────────────────────────────
     private static DatabaseManager instance;
 
     private String url;
     private String user;
     private String password;
 
-    // ─── Connection Pool ──────────────────────────────────────────────────────
     private final List<Connection> pool = new ArrayList<>();
     private final List<Connection> usedConnections = new ArrayList<>();
     private int maxConnections;
 
-    // ─── Приватный конструктор (Singleton) ───────────────────────────────────
     private DatabaseManager() {
         loadProperties();
         initPool();
     }
 
-    /**
-     * Получить единственный экземпляр DatabaseManager.
-     * synchronized — потокобезопасный доступ (Threads!).
-     */
     public static synchronized DatabaseManager getInstance() {
         if (instance == null) {
             instance = new DatabaseManager();
@@ -47,7 +34,6 @@ public class DatabaseManager {
         return instance;
     }
 
-    // ─── Загрузка конфига ─────────────────────────────────────────────────────
     private void loadProperties() {
         Properties props = new Properties();
         try (InputStream is = getClass().getClassLoader()
@@ -74,7 +60,6 @@ public class DatabaseManager {
         }
     }
 
-    // ─── Инициализация пула ───────────────────────────────────────────────────
     private void initPool() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -94,12 +79,6 @@ public class DatabaseManager {
         return DriverManager.getConnection(url, user, password);
     }
 
-    // ─── Получить соединение из пула ─────────────────────────────────────────
-    /**
-     * Взять соединение из пула.
-     * Если пул пуст и не достигнут максимум — создать новое.
-     * Threads: synchronized для безопасного доступа из разных потоков.
-     */
     public synchronized Connection getConnection() throws SQLException {
         if (pool.isEmpty()) {
             if (usedConnections.size() < maxConnections) {
@@ -120,9 +99,6 @@ public class DatabaseManager {
         return connection;
     }
 
-    /**
-     * Вернуть соединение обратно в пул.
-     */
     public synchronized void releaseConnection(Connection connection) {
         if (connection != null) {
             usedConnections.remove(connection);
@@ -130,9 +106,6 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Закрыть все соединения (при завершении сервера).
-     */
     public synchronized void shutdown() {
         for (Connection conn : pool) {
             try { conn.close(); } catch (SQLException ignored) {}

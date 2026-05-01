@@ -2,10 +2,6 @@ package com.messenger.db;
 
 import java.sql.*;
 
-/**
- * DAO для работы с таблицей files.
- * Хранит метаинформацию о загруженных файлах.
- */
 public class FileDAO {
 
     private final DatabaseManager db = DatabaseManager.getInstance();
@@ -40,9 +36,6 @@ public class FileDAO {
         return -1;
     }
 
-    /**
-     * Получить путь к файлу по ID сообщения.
-     */
     public String getFilePath(int messageId) {
         String sql = "SELECT file_path FROM files WHERE message_id = ?";
         Connection conn = null;

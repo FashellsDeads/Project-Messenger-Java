@@ -6,16 +6,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DAO для работы с таблицей messages.
- * JDBC: PreparedStatement для всех запросов.
- * OOP: Полиморфизм — возвращает разные типы AbstractMessage.
- */
 public class MessageDAO {
 
     private final DatabaseManager db = DatabaseManager.getInstance();
 
-    // ─── Сохранить сообщение ─────────────────────────────────────────────────
     public AbstractMessage save(AbstractMessage message) {
         String sql = "INSERT INTO messages (channel_id, sender_id, content, type) VALUES (?, ?, ?, ?)";
         Connection conn = null;
@@ -25,7 +19,7 @@ public class MessageDAO {
             ps.setInt(1, message.getChannelId());
 
             if (message.getSenderId() == 0) {
-                ps.setNull(2, Types.INTEGER); // системное сообщение
+                ps.setNull(2, Types.INTEGER);
             } else {
                 ps.setInt(2, message.getSenderId());
             }
@@ -47,7 +41,6 @@ public class MessageDAO {
         }
     }
 
-    // ─── Получить историю канала (последние N сообщений) ─────────────────────
     public List<AbstractMessage> findByChannel(int channelId, int limit) {
         String sql = "SELECT m.*, u.username FROM messages m " +
                      "LEFT JOIN users u ON m.sender_id = u.id " +
@@ -63,7 +56,7 @@ public class MessageDAO {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                messages.add(0, mapRow(rs)); // добавляем в начало — чтобы порядок был хронологический
+                messages.add(0, mapRow(rs));
             }
         } catch (SQLException e) {
             System.err.println("[MessageDAO] Ошибка findByChannel: " + e.getMessage());
@@ -73,7 +66,6 @@ public class MessageDAO {
         return messages;
     }
 
-    // ─── Маппинг строки → AbstractMessage (полиморфизм!) ─────────────────────
     private AbstractMessage mapRow(ResultSet rs) throws SQLException {
         int id         = rs.getInt("id");
         int channelId  = rs.getInt("channel_id");
@@ -86,7 +78,6 @@ public class MessageDAO {
         MessageType type = MessageType.valueOf(typeStr);
         AbstractMessage message;
 
-        // Полиморфизм: создаём разные объекты в зависимости от типа
         switch (type) {
             case FILE:
                 message = new FileMessage(channelId, senderId,

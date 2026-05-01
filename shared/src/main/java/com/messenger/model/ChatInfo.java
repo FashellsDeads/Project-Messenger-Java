@@ -2,12 +2,11 @@ package com.messenger.model;
 
 import java.io.Serializable;
 
-// Лёгкий DTO — клиент получает это вместо полного объекта Chat
 public class ChatInfo implements Serializable {
 
     private final int    id;
-    private final String type; // "SELF" | "PRIVATE" | "CHANNEL"
-    private final String name; // для PRIVATE — имя собеседника, для CHANNEL — название
+    private final String type;
+    private final String name;
 
     public ChatInfo(int id, String type, String name) {
         this.id   = id;

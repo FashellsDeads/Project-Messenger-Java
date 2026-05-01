@@ -80,7 +80,6 @@ public class NetworkClient {
             return;
         }
 
-        // Маршрутизация в зависимости от типа пакета
         switch (packet.getType()) {
             case LOGIN_RESPONSE:
             case REGISTER_RESPONSE:

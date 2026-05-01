@@ -2,10 +2,6 @@ package com.messenger.protocol;
 
 import java.io.Serializable;
 
-/**
- * Данные для регистрации пользователя.
- * Передаётся внутри Packet<RegisterRequest>.
- */
 public class RegisterRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;

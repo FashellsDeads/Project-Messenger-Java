@@ -7,7 +7,7 @@ public class SystemMessage extends AbstractMessage {
     private final EventType eventType;
 
     public SystemMessage(int channelId, String actorName, EventType eventType) {
-        super(0, 0, channelId); // senderId=0 означает система
+        super(0, 0, channelId);
         this.eventType = eventType;
         setType(MessageType.SYSTEM);
     }

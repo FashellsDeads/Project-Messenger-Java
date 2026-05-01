@@ -16,7 +16,7 @@ public class User implements Serializable {
     private LocalDateTime lastSeen;
     private Role role; // новое поле
 
-    // Добавить no-arg конструктор для DAO
+
     public User() {
         this.status = UserStatus.OFFLINE;
     }
