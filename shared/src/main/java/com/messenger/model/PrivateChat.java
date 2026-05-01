@@ -1,4 +1,4 @@
-package model;
+package com.messenger.model;
 
 import java.util.*;
 

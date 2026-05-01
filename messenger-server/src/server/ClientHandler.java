@@ -1,11 +1,11 @@
 package server;
 
+import com.messenger.model.*;
 import com.messenger.protocol.LoginRequest;
 import com.messenger.protocol.Packet;
 import com.messenger.protocol.PacketType;
 import com.messenger.protocol.RegisterRequest;
 import managers.*;
-import model.*;
 
 import java.io.*;
 import java.net.Socket;

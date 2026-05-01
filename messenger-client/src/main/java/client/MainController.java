@@ -104,6 +104,11 @@ public class MainController implements NetworkListener {
         showStatus("Отключено: " + reason, true);
     }
 
+    @Override
+    public void onCommandResponse(CommandResponse payload) {
+
+    }
+
     // --- Вспомогательные методы ---
 
     private void showStatus(String text, boolean isError) {

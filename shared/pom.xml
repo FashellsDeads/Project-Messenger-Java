@@ -13,6 +13,14 @@
 
     <artifactId>shared</artifactId>
     <name>Shared — Common Models and Protocol</name>
+    <dependencies>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>17.0.2</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
     <!-- Shared не зависит ни от чего внешнего — только чистая Java -->
 </project>

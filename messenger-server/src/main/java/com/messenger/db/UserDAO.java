@@ -1,8 +1,8 @@
 package com.messenger.db;
 
-import model.Role;
-import model.User;
-import model.UserStatus;
+import com.messenger.model.Role;
+import com.messenger.model.User;
+import com.messenger.model.UserStatus;
 
 import java.sql.*;
 import java.util.ArrayList;

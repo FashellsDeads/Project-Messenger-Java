@@ -1,7 +1,9 @@
 package managers;
 
 import com.messenger.db.MessageDAO;
-import model.*;
+import com.messenger.model.AbstractMessage;
+import com.messenger.model.Chat;
+import com.messenger.model.User;
 import server.ClientHandler;
 
 public class MessageDispatcher {

@@ -1,4 +1,4 @@
-package managers;
+package com.messenger.protocol;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

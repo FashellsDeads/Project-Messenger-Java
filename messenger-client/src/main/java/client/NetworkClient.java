@@ -1,13 +1,7 @@
 package client;
 
-import com.messenger.model.AbstractMessage;
-import com.messenger.model.User;
-import com.messenger.model.MessengerServer;
-import com.messenger.model.Channel;
-import com.messenger.protocol.LoginRequest;
-import com.messenger.protocol.Packet;
-import com.messenger.protocol.PacketType;
-import javafx.application.Platform;
+import com.messenger.model.*;
+import com.messenger.protocol.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,15 +15,22 @@ public class NetworkClient {
     private ObjectInputStream in;
     private Thread listenerThread;
     private NetworkListener listener;
+    private EventDispatcher dispatcher;
 
-    public void connect(String host, int port, NetworkListener listener) throws IOException {
+    private volatile boolean connected = false;
+
+    private volatile boolean running = true;
+
+    public void connect(String host, int port, NetworkListener listener, EventDispatcher dispatcher) throws IOException {
         this.listener = listener;
+        this.dispatcher = dispatcher;
+        running = true;
         this.socket = new Socket(host, port);
 
         this.out = new ObjectOutputStream(socket.getOutputStream());
         this.out.flush();
         this.in = new ObjectInputStream(socket.getInputStream());
-
+        connected = true;
         listenerThread = new Thread(this::listenForPackets);
         listenerThread.setDaemon(true);
         listenerThread.start();
@@ -40,17 +41,24 @@ public class NetworkClient {
     private void listenForPackets() {
         try {
             Object obj;
-            while ((obj = in.readObject()) != null) {
+            while (running && (obj = in.readObject()) != null) {
                 if (obj instanceof Packet<?> packet) {
 
-                    // Все обновления интерфейса делаем в потоке JavaFX
-                    Platform.runLater(() -> processPacket(packet));
+                    if (dispatcher != null) {
+                        dispatcher.dispatch(() -> processPacket(packet));
+                    } else {
+                        processPacket(packet);
+                    }
                 }
             }
         } catch (Exception e) {
-            Platform.runLater(() -> {
-                if (listener != null) listener.onDisconnected(e.getMessage());
-            });
+            if (listener != null) {
+                if (dispatcher != null) {
+                    dispatcher.dispatch(() -> listener.onDisconnected(e.getMessage()));
+                } else {
+                    listener.onDisconnected(e.getMessage());
+                }
+            }
         } finally {
             disconnect();
         }
@@ -75,7 +83,7 @@ public class NetworkClient {
                 break;
 
             case MESSAGE_BROADCAST:
-                listener.onMessageReceived((AbstractMessage) packet.getPayload());
+                safeCall(() -> listener.onMessageReceived((AbstractMessage) packet.getPayload()));
                 break;
 
             case CHANNEL_HISTORY:
@@ -93,13 +101,34 @@ public class NetworkClient {
             case ERROR:
                 listener.onError((String) packet.getPayload());
                 break;
+            case COMMAND_RESPONSE:
+                listener.onCommandResponse((CommandResponse) packet.getPayload());
+                break;
 
             default:
                 System.out.println("Получен необрабатываемый пакет: " + packet.getType());
         }
     }
+    private void safeCall(Runnable action) {
+        try {
+            action.run();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createPrivateChat(String username) {
+        sendPacket(new Packet<>(PacketType.COMMAND,
+                new Command(CommandType.CREATE_PRIVATE_CHAT, username)));
+    }
 
     public void sendPacket(Packet<?> packet) {
+
+        if (!isConnected()) {
+            System.err.println("Не подключено к серверу");
+            return;
+        }
+
         if (out != null && !socket.isClosed()) {
             try {
                 out.writeObject(packet);
@@ -111,6 +140,20 @@ public class NetworkClient {
         }
     }
 
+    public void register(String username, String email, String password) {
+        sendPacket(new Packet<>(PacketType.REGISTER_REQUEST,
+                new RegisterRequest(username, email, password)));
+    }
+
+
+    public void reconnect(String host, int port) throws IOException {
+        disconnect();
+        connect(host, port, listener, dispatcher);
+    }
+
+    public boolean isConnected() {
+        return connected && socket != null && !socket.isClosed();
+    }
 
     public void login(String email, String passwordHash) {
         LoginRequest req = new LoginRequest(email, passwordHash);
@@ -126,6 +169,9 @@ public class NetworkClient {
     }
 
     public void disconnect() {
+
+        connected = false;
+        running = false;
         try {
             sendPacket(new Packet<>(PacketType.DISCONNECT, null));
 

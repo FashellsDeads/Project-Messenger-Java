@@ -1,49 +1,56 @@
 package com.messenger.model;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.*;
 
-/**
- * Модель канала внутри сервера.
- */
-public class Channel implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class Channel implements Chat{
 
     private int id;
     private String name;
+    private Set<User> members = new HashSet<>();
+    private List<AbstractMessage> history = new ArrayList<>();
     private int serverId;
-    private LocalDateTime createdAt;
+    public String getName() { return name; }
+
+    public Channel(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
     public Channel() {}
 
-    public Channel(int id, String name, int serverId) {
+    public void setId(int id) {
         this.id = id;
-        this.name = name;
-        this.serverId = serverId;
-        this.createdAt = LocalDateTime.now();
     }
-
-    public Channel(String name, int serverId) {
-        this.name = name;
-        this.serverId = serverId;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public int getServerId() { return serverId; }
-    public void setServerId(int serverId) { this.serverId = serverId; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setName(String name)  { this.name = name; }
+    public void setServerId(int sid)  { this.serverId = sid; }
+    public int getServerId()          { return serverId; }
 
     @Override
-    public String toString() {
-        return "# " + name;
+    public int getId() {
+        return id;
+    }
+
+    @Override
+    public void sendMessage(AbstractMessage msg) {
+        history.add(msg);
+    }
+
+    @Override
+    public List<AbstractMessage> getHistory() {
+        return Collections.unmodifiableList(history);
+    }
+
+    @Override
+    public Set<User> getParticipants() {
+        return Collections.unmodifiableSet(members);
+    }
+
+
+    public void addMember(User user) {
+        members.add(user);
+    }
+
+    public void removeMember(User user) {
+        members.remove(user);
     }
 }

@@ -1,4 +1,4 @@
-package model;
+package com.messenger.model;
 
 public enum CommandType {
     CREATE_PRIVATE_CHAT,
