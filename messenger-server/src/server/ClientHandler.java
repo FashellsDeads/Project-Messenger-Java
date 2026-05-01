@@ -3,6 +3,7 @@ package server;
 import com.messenger.protocol.LoginRequest;
 import com.messenger.protocol.Packet;
 import com.messenger.protocol.PacketType;
+import com.messenger.protocol.RegisterRequest;
 import managers.*;
 import model.*;
 
@@ -79,7 +80,7 @@ public class ClientHandler implements Runnable {
 
             case COMMAND: {
                 Command cmd = (Command) packet.getPayload();
-                Object response = commandHandler.handle(cmd, currentUser);
+                Serializable response = commandHandler.handle(cmd, currentUser);
                 sendPacket(new Packet<>(PacketType.COMMAND_RESPONSE, response));
                 break;
             }
@@ -113,9 +114,13 @@ public class ClientHandler implements Runnable {
             }
 
             case REGISTER_REQUEST: {
-                LoginRequest req = (LoginRequest) packet.getPayload();
+                RegisterRequest req = (RegisterRequest) packet.getPayload();
 
-                currentUser = authManager.register(req.getEmail(), req.getEmail(), req.getPasswordHash());
+                currentUser = authManager.register(
+                        req.getUsername(),
+                        req.getEmail(),
+                        req.getPasswordHash()
+                );
 
                 if (currentUser != null) {
                     onAuthSuccess();
