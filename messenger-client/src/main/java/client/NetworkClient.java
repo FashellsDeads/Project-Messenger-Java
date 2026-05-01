@@ -27,18 +27,31 @@ public class NetworkClient {
     }
 
     public void connect(String host, int port, NetworkListener listener, EventDispatcher dispatcher) throws IOException {
-        this.listener = listener;
-        this.dispatcher = dispatcher;
-        running = true;
-        this.socket = new Socket(host, port);
+        try {
+            this.listener = listener;
+            this.dispatcher = dispatcher;
+            running = true;
+            this.socket = new Socket(host, port);
 
-        this.out = new ObjectOutputStream(socket.getOutputStream());
-        this.out.flush();
-        this.in = new ObjectInputStream(socket.getInputStream());
-        connected = true;
-        listenerThread = new Thread(this::listenForPackets);
-        listenerThread.setDaemon(true);
-        listenerThread.start();
+            System.out.println("Socket connected");
+
+
+            this.out = new ObjectOutputStream(socket.getOutputStream());
+            this.out.flush();
+            this.in = new ObjectInputStream(socket.getInputStream());
+
+            connected = true;
+            System.out.println("Streams ready");
+
+            listenerThread = new Thread(this::listenForPackets);
+            listenerThread.setDaemon(true);
+            listenerThread.start();
+
+        } catch (IOException e) {
+            connected = false;
+            System.err.println("CONNECT ERROR: " + e.getMessage());
+            throw e;
+        }
     }
 
 

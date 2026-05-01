@@ -13,11 +13,12 @@ import java.util.List;
 public class ChatController implements NetworkListener {
 
     // Элементы интерфейса из main.fxml
-    @FXML private ListView<MessengerServer> serverList;
     @FXML private ListView<Channel> channelsList;
     @FXML private ListView<AbstractMessage> messagesList;
     @FXML private TextField messageInput;
     @FXML private Label currentServerLabel;
+    @FXML private ListView<Chat> chatsList;
+    private Chat currentChat;
 
     private User currentUser;
     private Channel currentChannel;
@@ -28,13 +29,6 @@ public class ChatController implements NetworkListener {
     @FXML
     public void initialize() {
         // Настраиваем отображение серверов (чтобы видеть название, а не адрес объекта)
-        serverList.setCellFactory(param -> new ListCell<>() {
-            @Override
-            protected void updateItem(MessengerServer item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.getName());
-            }
-        });
 
         // Настраиваем отображение каналов
         channelsList.setCellFactory(param -> new ListCell<>() {
@@ -42,6 +36,14 @@ public class ChatController implements NetworkListener {
             protected void updateItem(Channel item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null : "# " + item.getName());
+            }
+        });
+
+        chatsList.setCellFactory(param -> new ListCell<>() {
+            @Override
+            protected void updateItem(Chat item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : formatChat(item));
             }
         });
 
@@ -53,6 +55,15 @@ public class ChatController implements NetworkListener {
             }
         });
     }
+
+    private String formatChat(Chat chat) {
+        return switch (chat.getType()) {
+            case DM -> "💬 " + chat.getName();
+            case CHANNEL -> "# " + chat.getName();
+            case SELF -> "🧍 Self";
+        };
+    }
+
 
     // Метод для получения данных пользователя при переходе с экрана логина
     public void setUser(User user) {
@@ -107,9 +118,6 @@ public class ChatController implements NetworkListener {
 
     @Override
     public void onServersListReceived(List<MessengerServer> servers) {
-        Platform.runLater(() -> {
-            serverList.setItems(FXCollections.observableArrayList(servers));
-        });
     }
 
     @Override

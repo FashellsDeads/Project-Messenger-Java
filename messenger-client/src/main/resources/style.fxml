@@ -15,7 +15,7 @@
       <!-- StackPane заполнит всё окно и будет держать карточку в центре -->
       <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <VBox alignment="CENTER" maxWidth="400.0" spacing="20.0" style="-fx-background-color: #36393F; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 15, 0, 0, 0);">
+            <VBox alignment="CENTER" maxWidth="600.0" prefWidth="400.0" spacing="20.0" style="-fx-background-color: #36393F; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 15, 0, 0, 0);">
                <children>
                   <VBox alignment="CENTER" spacing="5.0">
                      <children>

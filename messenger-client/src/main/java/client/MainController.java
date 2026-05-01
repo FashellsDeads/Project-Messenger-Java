@@ -1,6 +1,7 @@
 package client;
 
 import com.messenger.model.*;
+import com.messenger.protocol.FxDispatcher;
 import com.messenger.protocol.Packet;
 import com.messenger.protocol.PacketType;
 //import com.messenger.protocol.RegisterRequest; // Предполагаем, что он есть в протоколах
@@ -27,12 +28,30 @@ public class MainController implements NetworkListener {
 
     @FXML
     public void initialize() {
-        JavaFXClientLauncher.networkClient.setListener(this);
+
+        // 2. Логика скрытия поля Email для режима входа
         if (emailField != null) {
             emailLabel.setVisible(false);
             emailLabel.setManaged(false);
             emailField.setVisible(false);
             emailField.setManaged(false);
+        }
+
+        // 3. ПОДКЛЮЧЕНИЕ К СЕРВЕРУ (Код, который всё оживляет)
+        try {
+            // Используем параметры из твоего успешного консольного теста
+            String host = "localhost";
+            int port = 9092;
+
+            System.out.println("[GUI] Попытка подключения к " + host + ":" + port);
+            JavaFXClientLauncher.networkClient.connect(host, port, this, new FxDispatcher());
+
+            showStatus("Связь с сервером установлена", false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showStatus("Сервер недоступен! Проверь запущен ли бэкенд.", true);
+            // Блокируем кнопку, чтобы не пытаться слать пакеты в закрытый сокет
+            mainActionBtn.setDisable(true);
         }
     }
 
