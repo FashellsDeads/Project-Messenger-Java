@@ -1,0 +1,57 @@
+# ─── Compiled Output ───────────────────────────────────────────────────────────
+target/
+*.class
+*.jar
+*.war
+
+# ─── Maven ─────────────────────────────────────────────────────────────────────
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ─── IntelliJ IDEA ─────────────────────────────────────────────────────────────
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# ─── Eclipse ───────────────────────────────────────────────────────────────────
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# ─── VS Code ───────────────────────────────────────────────────────────────────
+.vscode/
+
+# ─── 🔐 СЕКРЕТНЫЕ ФАЙЛЫ — НИКОГДА НЕ ПУШИТЬ! ──────────────────────────────────
+messenger-server/src/main/resources/db.properties
+messenger-client/src/main/resources/config.properties
+*.properties
+# Исключение: примеры конфигов (с суффиксом .example) — пушить можно
+!**/*.example
+
+# ─── Загруженные файлы пользователей ───────────────────────────────────────────
+messenger-server/uploads/
+messenger-server/logs/
+
+# ─── Сессионные файлы клиента ──────────────────────────────────────────────────
+messenger-client/config/
+*.ser
+
+# ─── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ─── Логи ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
