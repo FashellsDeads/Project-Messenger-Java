@@ -5,6 +5,7 @@ import com.messenger.model.User;
 import com.messenger.model.MessengerServer;
 import com.messenger.model.Channel;
 import com.messenger.protocol.LoginRequest;
+import com.messenger.protocol.RegisterRequest; // Предполагаемый DTO для регистрации
 import com.messenger.protocol.Packet;
 import com.messenger.protocol.PacketType;
 import javafx.application.Platform;
@@ -35,14 +36,12 @@ public class NetworkClient {
         listenerThread.start();
     }
 
-
     @SuppressWarnings("unchecked")
     private void listenForPackets() {
         try {
-            Object obj;
-            while ((obj = in.readObject()) != null) {
+            while (true) {
+                Object obj = in.readObject();
                 if (obj instanceof Packet<?> packet) {
-
                     // Все обновления интерфейса делаем в потоке JavaFX
                     Platform.runLater(() -> processPacket(packet));
                 }
@@ -56,7 +55,7 @@ public class NetworkClient {
         }
     }
 
-
+    @SuppressWarnings("unchecked")
     private void processPacket(Packet<?> packet) {
         if (listener == null) return;
 
@@ -65,35 +64,48 @@ public class NetworkClient {
             return;
         }
 
-        // Маршрутизация в зависимости от типа пакета
+        Object payload = packet.getPayload();
+
         switch (packet.getType()) {
             case LOGIN_RESPONSE:
             case REGISTER_RESPONSE:
-                listener.onLoginSuccess((User) packet.getPayload());
+                if (payload instanceof User user) {
+                    listener.onLoginSuccess(user);
+                }
                 break;
 
             case MESSAGE_BROADCAST:
-                listener.onMessageReceived((AbstractMessage) packet.getPayload());
+                if (payload instanceof AbstractMessage msg) {
+                    listener.onMessageReceived(msg);
+                }
                 break;
 
             case CHANNEL_HISTORY:
-                listener.onChannelHistoryReceived((List<AbstractMessage>) packet.getPayload());
+                if (payload instanceof List<?> list) {
+                    listener.onChannelHistoryReceived((List<AbstractMessage>) list);
+                }
                 break;
 
             case SERVERS_LIST:
-                listener.onServersListReceived((List<MessengerServer>) packet.getPayload());
+                if (payload instanceof List<?> list) {
+                    listener.onServersListReceived((List<MessengerServer>) list);
+                }
                 break;
 
             case CHANNELS_LIST:
-                listener.onChannelsListReceived((List<Channel>) packet.getPayload());
+                if (payload instanceof List<?> list) {
+                    listener.onChannelsListReceived((List<Channel>) list);
+                }
                 break;
 
             case ERROR:
-                listener.onError((String) packet.getPayload());
+                if (payload instanceof String errorMsg) {
+                    listener.onError(errorMsg);
+                }
                 break;
 
             default:
-                System.out.println("Получен необрабатываемый пакет: " + packet.getType());
+                listener.onError("Unknown packet type received: " + packet.getType());
         }
     }
 
@@ -109,10 +121,20 @@ public class NetworkClient {
         }
     }
 
+    private void sendEmptyPacket(PacketType type) {
+        sendPacket(new Packet<>(type, ""));
+    }
+
+    // --- API Клиента ---
 
     public void login(String email, String passwordHash) {
         LoginRequest req = new LoginRequest(email, passwordHash);
         sendPacket(new Packet<>(PacketType.LOGIN_REQUEST, req));
+    }
+
+    public void register(String username, String email, String passwordHash) {
+        RegisterRequest req = new RegisterRequest(username, email, passwordHash);
+        sendPacket(new Packet<>(PacketType.REGISTER_REQUEST, req));
     }
 
     public void sendMessage(AbstractMessage message) {
@@ -120,12 +142,14 @@ public class NetworkClient {
     }
 
     public void requestServers() {
-        sendPacket(new Packet<>(PacketType.GET_SERVERS, null));
+        sendEmptyPacket(PacketType.GET_SERVERS);
     }
 
     public void disconnect() {
         try {
-            sendPacket(new Packet<>(PacketType.DISCONNECT, null));
+            if (socket != null && !socket.isClosed() && out != null) {
+                sendEmptyPacket(PacketType.DISCONNECT);
+            }
 
             if (in != null) in.close();
             if (out != null) out.close();
