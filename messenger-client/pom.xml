@@ -30,6 +30,12 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.messenger</groupId>
+            <artifactId>messenger-server</artifactId>
+            <version>1.0.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

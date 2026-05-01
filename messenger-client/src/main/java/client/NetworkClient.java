@@ -5,10 +5,11 @@ import com.messenger.model.User;
 import com.messenger.model.MessengerServer;
 import com.messenger.model.Channel;
 import com.messenger.protocol.LoginRequest;
-import com.messenger.protocol.RegisterRequest; // Предполагаемый DTO для регистрации
+import com.messenger.protocol.RegisterRequest;
 import com.messenger.protocol.Packet;
 import com.messenger.protocol.PacketType;
 import javafx.application.Platform;
+import model.Command;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -126,7 +127,9 @@ public class NetworkClient {
     }
 
     // --- API Клиента ---
-
+    public void sendCommand(Command command) {
+        sendPacket(new Packet<>(PacketType.COMMAND, command));
+    }
     public void login(String email, String passwordHash) {
         LoginRequest req = new LoginRequest(email, passwordHash);
         sendPacket(new Packet<>(PacketType.LOGIN_REQUEST, req));
