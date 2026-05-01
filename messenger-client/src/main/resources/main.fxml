@@ -12,56 +12,44 @@
 
 <AnchorPane prefHeight="700.0" prefWidth="1000.0" style="-fx-background-color: #2F3136;" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.ChatController">
    <children>
+      <!-- Привязываем HBox ко всем сторонам родителя -->
       <HBox prefHeight="700.0" prefWidth="1000.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <!-- Панель серверов (самая левая) -->
-            <VBox alignment="TOP_CENTER" prefHeight="700.0" prefWidth="72.0" spacing="10.0" style="-fx-background-color: #202225;">
+            <!-- Левая панель серверов: фиксированная ширина -->
+            <VBox minWidth="72.0" prefWidth="72.0" spacing="10.0" style="-fx-background-color: #202225;">
                <children>
                   <Button mnemonicParsing="false" onAction="#handleAddServer" prefHeight="48.0" prefWidth="48.0" style="-fx-background-radius: 24; -fx-background-color: #3BA55D; -fx-text-fill: white;" text="+">
-                     <font>
-                        <Font name="System Bold" size="20.0" />
-                     </font>
+                     <VBox.margin><Insets left="12.0" top="15.0" /></VBox.margin>
+                     <font><Font name="System Bold" size="20.0" /></font>
                   </Button>
-                  <ListView fx:id="serverList" prefHeight="630.0" prefWidth="72.0" style="-fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 5;" />
+                  <ListView fx:id="serverList" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-padding: 5;" />
                </children>
-               <padding>
-                  <Insets top="15.0" />
-               </padding>
             </VBox>
 
-            <!-- Панель каналов -->
-            <VBox prefHeight="700.0" prefWidth="232.0" style="-fx-background-color: #2F3136;">
+            <!-- Панель каналов: фиксированная ширина -->
+            <VBox minWidth="240.0" prefWidth="240.0" style="-fx-background-color: #2F3136;">
                <children>
-                  <Label fx:id="currentServerLabel" prefHeight="48.0" prefWidth="232.0" style="-fx-border-color: #202225; -fx-border-width: 0 0 1 0; -fx-text-fill: white;" text="Сервер">
-                     <padding>
-                        <Insets left="15.0" />
-                     </padding>
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
+                  <Label fx:id="currentServerLabel" prefHeight="48.0" prefWidth="240.0" style="-fx-border-color: #202225; -fx-border-width: 0 0 1 0; -fx-text-fill: white;" text="Сервер">
+                     <padding><Insets left="15.0" /></padding>
+                     <font><Font name="System Bold" size="14.0" /></font>
                   </Label>
-                  <ListView fx:id="channelsList" prefHeight="652.0" prefWidth="232.0" style="-fx-background-color: transparent; -fx-padding: 10;" />
+                  <ListView fx:id="channelsList" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;" />
                </children>
             </VBox>
 
-            <!-- Область чата -->
-            <VBox prefHeight="700.0" prefWidth="696.0" style="-fx-background-color: #36393F;" HBox.hgrow="ALWAYS">
+            <!-- Область чата: СВОЙСТВО Hgrow="ALWAYS" заставляет её растягиваться -->
+            <VBox style="-fx-background-color: #36393F;" HBox.hgrow="ALWAYS">
                <children>
-                  <ListView fx:id="messagesList" prefHeight="600.0" prefWidth="696.0" style="-fx-background-color: transparent; -fx-background-insets: 0;" VBox.vgrow="ALWAYS" />
+                  <ListView fx:id="messagesList" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;" />
 
-                  <!-- Контейнер для ввода сообщения -->
-                  <HBox alignment="CENTER" prefHeight="80.0" prefWidth="696.0" spacing="15.0">
+                  <HBox alignment="CENTER" minHeight="80.0" prefHeight="80.0" spacing="15.0">
                      <children>
-                        <TextField fx:id="messageInput" prefHeight="44.0" prefWidth="550.0" promptText="Написать сообщение..." style="-fx-background-color: #40444B; -fx-text-fill: white; -fx-background-radius: 8; -fx-prompt-text-fill: #72767D;" HBox.hgrow="ALWAYS" />
-                        <Button mnemonicParsing="false" onAction="#handleSendMessage" prefHeight="44.0" prefWidth="100.0" style="-fx-background-color: #5865F2; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;" text="Отправить">
-                           <font>
-                              <Font name="System Bold" size="13.0" />
-                           </font>
+                        <TextField fx:id="messageInput" prefHeight="44.0" promptText="Написать сообщение..." style="-fx-background-color: #40444B; -fx-text-fill: white; -fx-background-radius: 8;" HBox.hgrow="ALWAYS" />
+                        <Button mnemonicParsing="false" onAction="#handleSendMessage" prefHeight="44.0" prefWidth="100.0" style="-fx-background-color: #5865F2; -fx-text-fill: white; -fx-background-radius: 8;" text="ОТПРАВИТЬ">
+                           <font><Font name="System Bold" size="12.0" /></font>
                         </Button>
                      </children>
-                     <padding>
-                        <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
-                     </padding>
+                     <padding><Insets left="20.0" right="20.0" /></padding>
                   </HBox>
                </children>
             </VBox>
