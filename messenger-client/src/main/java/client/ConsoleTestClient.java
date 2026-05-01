@@ -1,9 +1,7 @@
 package client;
 
-import com.messenger.model.AbstractMessage;
-import com.messenger.model.Channel;
-import com.messenger.model.MessengerServer;
-import com.messenger.model.User;
+import com.messenger.model.*;
+import com.messenger.protocol.DirectDispatcher;
 
 import java.util.List;
 import java.util.Scanner;
@@ -48,11 +46,16 @@ public class ConsoleTestClient {
             public void onDisconnected(String reason) {
                 System.out.println("[СЕТЬ] Отключено: " + reason);
             }
+
+            @Override
+            public void onCommandResponse(CommandResponse payload) {
+
+            }
         };
 
         try {
             System.out.println(" Подключаемся к серверу на localhost:9090");
-            client.connect("localhost", 9091, consoleListener);
+            client.connect("localhost", 9091, consoleListener,new DirectDispatcher());
             System.out.println("Подключено! Потоки запущены.");
 
             Thread.sleep(1000);

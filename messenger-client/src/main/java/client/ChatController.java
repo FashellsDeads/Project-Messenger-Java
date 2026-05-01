@@ -130,6 +130,15 @@ public class ChatController implements NetworkListener {
     @Override public void onDisconnected(String reason) {
         Platform.runLater(() -> System.out.println("Отключено: " + reason));
     }
+
+    //РОМА ТУТ НОВЫЙ МЕТОД НАДО ИМПЛЕМЕНТИРОВАТЬ КАРОЧЕ РАБОТАй
+    @Override
+    public void onCommandResponse(CommandResponse payload) {
+        throw new UnsupportedOperationException(
+                "COMMAND_RESPONSE received but no handler implemented"
+        );
+    }
+
     @FXML
     private void handleAddServer() {
         // Создаем простое диалоговое окно для ввода данных

@@ -1,9 +1,6 @@
 package client;
 
-import com.messenger.model.AbstractMessage;
-import com.messenger.model.Channel;
-import com.messenger.model.MessengerServer;
-import com.messenger.model.User;
+import com.messenger.model.*;
 
 import java.util.List;
 
@@ -22,4 +19,6 @@ public interface NetworkListener {
 
     // Системное
     void onDisconnected(String reason);
+
+    void onCommandResponse(CommandResponse payload);
 }

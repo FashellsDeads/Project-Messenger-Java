@@ -4,6 +4,7 @@ import com.messenger.db.UserDAO;
 import com.messenger.model.SelfChat;
 import com.messenger.model.User;
 import com.messenger.model.UserStatus;
+import com.messenger.protocol.IdGenerator;
 
 import java.util.Optional;
 

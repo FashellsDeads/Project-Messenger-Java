@@ -1,6 +1,7 @@
 package managers;
 
 import com.messenger.model.*;
+import com.messenger.protocol.IdGenerator;
 import server.ClientHandler;
 
 import java.io.Serializable;
