@@ -16,10 +16,15 @@ public class NetworkClient {
     private Thread listenerThread;
     private NetworkListener listener;
     private EventDispatcher dispatcher;
+    private final CommandAPI commands = new CommandAPI(this);
 
     private volatile boolean connected = false;
 
     private volatile boolean running = true;
+
+    public CommandAPI commands() {
+        return commands;
+    }
 
     public void connect(String host, int port, NetworkListener listener, EventDispatcher dispatcher) throws IOException {
         this.listener = listener;
@@ -115,11 +120,6 @@ public class NetworkClient {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public void createPrivateChat(String username) {
-        sendPacket(new Packet<>(PacketType.COMMAND,
-                new Command(CommandType.CREATE_PRIVATE_CHAT, username)));
     }
 
     public void sendPacket(Packet<?> packet) {
