@@ -2,7 +2,7 @@ package server;
 
 public class Main {
     public static void main(String[] args) {
-        ChatServer server = new ChatServer(9090);
+        ChatServer server = new ChatServer(9091);
         server.start();
     }
 }

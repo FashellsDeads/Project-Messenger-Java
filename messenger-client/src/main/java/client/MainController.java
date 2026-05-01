@@ -46,15 +46,13 @@ public class MainController implements NetworkListener {
             User newUser = new User(login, email, password);
 
             statusLabel.setText("Регистрация...");
-            // ЗАКОММЕНТИРОВАНО:
-            // JavaFXClientLauncher.networkClient.register(newUser);
+            //JavaFXClientLauncher.networkClient.register(newUser);
 
             // Имитация успеха:
             onLoginSuccess(newUser);
         } else {
             statusLabel.setText("Вход...");
-            // ЗАКОММЕНТИРОВАНО:
-            // JavaFXClientLauncher.networkClient.login(login, password);
+            JavaFXClientLauncher.networkClient.login(login, password);
 
             // Имитация успеха (для теста введи admin):
             if (login.equalsIgnoreCase("admin")) {

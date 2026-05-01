@@ -13,7 +13,6 @@ public class JavaFXClientLauncher extends Application{
     public void start(Stage primaryStage) throws Exception {
         networkClient = new NetworkClient();
 
-        // Загружаем твой FXML (который ты нарисуешь в Scene Builder)
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/style.fxml"));
         Parent root = loader.load();
         MainController controller = loader.getController();
