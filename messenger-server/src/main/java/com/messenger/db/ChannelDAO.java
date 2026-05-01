@@ -60,7 +60,7 @@ public class ChannelDAO {
             conn = db.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, channel.getName());
-            ps.setInt(2, channel.getId());
+            ps.setInt(2, channel.getServerId());
             ps.executeUpdate();
 
             ResultSet keys = ps.getGeneratedKeys();

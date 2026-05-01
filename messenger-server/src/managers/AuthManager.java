@@ -1,37 +1,44 @@
 package managers;
 
+import com.messenger.db.UserDAO;
 import model.*;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 public class AuthManager {
 
-    private final Map<String, User> usersByName = new HashMap<>();
-    public final ChatManager chatManager;
+    private final ChatManager chatManager;
+    private final UserDAO userDAO;
 
-    public AuthManager(ChatManager chatManager) {
+    public AuthManager(ChatManager chatManager, UserDAO userDAO) {
         this.chatManager = chatManager;
+        this.userDAO     = userDAO;
     }
 
     public User register(String username, String email, String password) {
-        if (usersByName.containsKey(username)) return null; // ← убрали throw
+        // Проверяем БД, а не HashMap
+        if (userDAO.existsByUsername(username)) return null;
 
-        User user = new User(IdGenerator.generateId(), username, email, password);
-        usersByName.put(username, user);
-        chatManager.addChat(new SelfChat(IdGenerator.generateId(), user)); // ← исправлен id
-        return user;
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPasswordHash(password); // позже сюда придёт BCrypt
+        user.setStatus(UserStatus.OFFLINE);
+
+        User saved = userDAO.save(user); // id присваивает БД
+        if (saved == null) return null;
+
+        chatManager.addChat(new SelfChat(IdGenerator.generateId(), saved));
+        return saved;
     }
 
     public User login(String username, String password) {
-        User user = usersByName.get(username);
+        User user = userDAO.findByUsername(username);
         if (user == null || !user.getPassword().equals(password)) return null;
         return user;
     }
 
-    // Нужен для CREATE_PRIVATE_CHAT — ищем собеседника по имени
     public Optional<User> findByUsername(String username) {
-        return Optional.ofNullable(usersByName.get(username));
+        return Optional.ofNullable(userDAO.findByUsername(username));
     }
 }

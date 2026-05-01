@@ -1,9 +1,8 @@
 package com.messenger.db;
 
-import com.messenger.model.*;
+import model.*;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

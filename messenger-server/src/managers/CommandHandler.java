@@ -95,10 +95,11 @@ public class CommandHandler {
     }
 
     private CommandResponse createChannel(Command cmd, User currentUser) {
-        String name     = cmd.getArg(0);
-        Channel channel = new Channel(IdGenerator.generateId(), name);
-        channel.addMember(currentUser);
-        chatManager.addChat(channel);
+        String name = cmd.getArg(0);
+        // serverId=0 — пока без привязки к серверу, для универа ок
+        Channel channel = chatManager.createAndSaveChannel(name, 0, currentUser);
+        if (channel == null)
+            return CommandResponse.error("Не удалось создать канал");
 
         System.out.println("Channel '" + name + "' created by " + currentUser.getUsername());
         return new CommandResponse(true, "Channel created: " + name, channel.getId());
@@ -123,7 +124,8 @@ public class CommandHandler {
         if (!isMember)
             return CommandResponse.error("Access denied");
 
-        List<AbstractMessage> history = new ArrayList<>(chat.getHistory());
+        // Теперь через ChatManager — он сам решает память или БД
+        List<AbstractMessage> history = chatManager.getHistory(chatId);
         return new CommandResponse(true, "OK", chatId, (Serializable) history);
     }
 
