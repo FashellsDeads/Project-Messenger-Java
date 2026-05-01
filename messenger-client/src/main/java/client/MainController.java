@@ -98,22 +98,32 @@ public class MainController implements NetworkListener {
 
     private void navigateToMainChat(User user) {
         try {
+            // 1. Создаем загрузчик
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/main.fxml"));
+
+            // 2. Загружаем корень (на этом этапе создается экземпляр ChatController)
             Parent root = loader.load();
 
-            // Переход на главную сцену
+            // 3. Получаем доступ к контроллеру чата
+            ChatController chatController = loader.getController();
+
+            // 4. Передаем залогиненного пользователя в новый контроллер
+            chatController.setUser(user);
+
+            // 5. Меняем сцену
             Stage stage = (Stage) mainActionBtn.getScene().getWindow();
             Scene scene = new Scene(root, 1000, 700);
 
             stage.setScene(scene);
             stage.setTitle("Messenger - " + user.getUsername());
             stage.centerOnScreen();
+
         } catch (Exception e) {
             e.printStackTrace();
-            if (statusLabel != null){
-            statusLabel.setStyle("-fx-text-fill: red;");
-            statusLabel.setText("Ошибка перехода: " + e.getMessage());
-         }
+            if (statusLabel != null) {
+                statusLabel.setStyle("-fx-text-fill: red;");
+                statusLabel.setText("Ошибка перехода: " + e.getMessage());
+            }
         }
     }
 
