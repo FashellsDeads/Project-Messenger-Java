@@ -6,7 +6,7 @@ db.host=localhost
 db.port=3306
 db.name=messenger_db
 db.user=root
-db.password=1111
+db.password=root1234
 
 # Параметры пула соединений
 db.pool.minConnections=3

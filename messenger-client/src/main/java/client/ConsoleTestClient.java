@@ -52,7 +52,7 @@ public class ConsoleTestClient {
 
         try {
             System.out.println(" Подключаемся к серверу на localhost:9090");
-            client.connect("localhost", 9090, consoleListener);
+            client.connect("localhost", 9091, consoleListener);
             System.out.println("Подключено! Потоки запущены.");
 
             Thread.sleep(1000);

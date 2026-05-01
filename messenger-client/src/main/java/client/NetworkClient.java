@@ -60,6 +60,8 @@ public class NetworkClient {
     private void processPacket(Packet<?> packet) {
         if (listener == null) return;
 
+        System.out.println("Получен пакет от сервера: " + packet.getType());
+
         if (!packet.isSuccess()) {
             listener.onError(packet.getErrorMessage());
             return;
@@ -131,5 +133,8 @@ public class NetworkClient {
             if (out != null) out.close();
             if (socket != null && !socket.isClosed()) socket.close();
         } catch (IOException ignored) {}
+    }
+    public void setListener(NetworkListener listener) {
+        this.listener = listener;
     }
 }

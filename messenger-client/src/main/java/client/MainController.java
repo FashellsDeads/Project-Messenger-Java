@@ -1,6 +1,9 @@
 package client;
 
 import com.messenger.model.*;
+import com.messenger.protocol.Packet;
+import com.messenger.protocol.PacketType;
+//import com.messenger.protocol.RegisterRequest; // Предполагаем, что он есть в протоколах
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,8 +17,9 @@ public class MainController implements NetworkListener {
 
     @FXML private TextField loginField;
     @FXML private PasswordField passwordField;
-    @FXML private TextField emailField; // Новое поле
+    @FXML private TextField emailField;
     @FXML private Label statusLabel;
+    @FXML private Label emailLabel;
     @FXML private Button mainActionBtn;
     @FXML private Button switchModeBtn;
 
@@ -23,7 +27,10 @@ public class MainController implements NetworkListener {
 
     @FXML
     public void initialize() {
+        JavaFXClientLauncher.networkClient.setListener(this);
         if (emailField != null) {
+            emailLabel.setVisible(false);
+            emailLabel.setManaged(false);
             emailField.setVisible(false);
             emailField.setManaged(false);
         }
@@ -31,105 +38,106 @@ public class MainController implements NetworkListener {
 
     @FXML
     private void handleMainAction() {
-        String login = loginField.getText();
-        String password = passwordField.getText();
-        String email = emailField.getText();
+        String login = loginField.getText().trim();
+        String password = passwordField.getText().trim();
+        String email = isRegistrationMode ? emailField.getText().trim() : "";
 
         if (login.isEmpty() || password.isEmpty() || (isRegistrationMode && email.isEmpty())) {
-            statusLabel.setStyle("-fx-text-fill: red;");
-            statusLabel.setText("Ошибка: заполните все поля!");
+            showStatus("Ошибка: заполните все поля!", true);
             return;
         }
 
+        mainActionBtn.setDisable(true);
+        showStatus(isRegistrationMode ? "Регистрация..." : "Вход...", false);
+
         if (isRegistrationMode) {
-            // Используем твой конструктор: User(String username, String email, String passwordHash)
-            User newUser = new User(login, email, password);
-
-            statusLabel.setText("Регистрация...");
-            //JavaFXClientLauncher.networkClient.register(newUser);
-
-            // Имитация успеха:
-            onLoginSuccess(newUser);
+            // Если в NetworkClient нет метода register, отправляем пакет напрямую
+            //RegisterRequest regReq = new RegisterRequest(login, email, password);
+            //JavaFXClientLauncher.networkClient.sendPacket(new Packet<>(PacketType.REGISTER_REQUEST, regReq));
         } else {
-            statusLabel.setText("Вход...");
+            // Используем существующий метод твоего NetworkClient
+            // В твоем клиенте параметры называются (email, passwordHash)
             JavaFXClientLauncher.networkClient.login(login, password);
-
-            // Имитация успеха (для теста введи admin):
-            if (login.equalsIgnoreCase("admin")) {
-                onLoginSuccess(new User(1, login, "admin@messenger.com"));
-            } else {
-                statusLabel.setStyle("-fx-text-fill: red;");
-                statusLabel.setText("Пользователь не найден");
-            }
         }
     }
 
     @FXML
     private void toggleMode() {
         isRegistrationMode = !isRegistrationMode;
-
-        // Включаем/выключаем видимость и резервирование места для поля почты
         emailField.setVisible(isRegistrationMode);
         emailField.setManaged(isRegistrationMode);
+        emailLabel.setVisible(isRegistrationMode);
+        emailLabel.setManaged(isRegistrationMode);
 
         if (isRegistrationMode) {
             mainActionBtn.setText("Создать аккаунт");
             switchModeBtn.setText("Уже есть аккаунт? Войти");
-            statusLabel.setText("Регистрация нового пользователя");
+            loginField.setPromptText("Имя пользователя");
+            emailField.setPromptText("Email");
         } else {
             mainActionBtn.setText("Войти");
             switchModeBtn.setText("Нет аккаунта? Регистрация");
-            statusLabel.setText("");
+            loginField.setPromptText("Email");
         }
-
-        // Автоматическая подгонка размера окна под новое содержимое (опционально)
+        statusLabel.setText("");
         mainActionBtn.getScene().getWindow().sizeToScene();
     }
 
+    // --- Методы NetworkListener (вызываются из NetworkClient) ---
+
     @Override
     public void onLoginSuccess(User user) {
-        Platform.runLater(() -> {
-            System.out.println("Вход выполнен: " + user.getUsername());
-            navigateToMainChat(user);
-        });
+        // Твой NetworkClient уже делает Platform.runLater, так что здесь просто переход
+        System.out.println("Авторизация успешна: " + user.getUsername());
+        navigateToMainChat(user);
+    }
+
+    @Override
+    public void onError(String msg) {
+        mainActionBtn.setDisable(false);
+        showStatus("Ошибка: " + msg, true);
+    }
+
+    @Override
+    public void onDisconnected(String reason) {
+        mainActionBtn.setDisable(false);
+        showStatus("Отключено: " + reason, true);
+    }
+
+    // --- Вспомогательные методы ---
+
+    private void showStatus(String text, boolean isError) {
+        statusLabel.setText(text);
+        statusLabel.setStyle(isError ? "-fx-text-fill: #ff5555;" : "-fx-text-fill: white;");
     }
 
     private void navigateToMainChat(User user) {
         try {
-            // 1. Создаем загрузчик
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/main.fxml"));
-
-            // 2. Загружаем корень (на этом этапе создается экземпляр ChatController)
             Parent root = loader.load();
 
-            // 3. Получаем доступ к контроллеру чата
+            // Передаем данные в контроллер чата
             ChatController chatController = loader.getController();
-
-            // 4. Передаем залогиненного пользователя в новый контроллер
             chatController.setUser(user);
 
-            // 5. Меняем сцену
-            Stage stage = (Stage) mainActionBtn.getScene().getWindow();
-            Scene scene = new Scene(root, 1000, 700);
+            // МЕНЯЕМ СЛУШАТЕЛЯ: теперь пакеты должен обрабатывать ChatController
+            // В твоем NetworkClient нужно будет добавить метод для смены listener
+            // JavaFXClientLauncher.networkClient.setListener(chatController);
 
-            stage.setScene(scene);
+            Stage stage = (Stage) mainActionBtn.getScene().getWindow();
+            stage.setScene(new Scene(root, 1000, 700));
             stage.setTitle("Messenger - " + user.getUsername());
             stage.centerOnScreen();
 
         } catch (Exception e) {
             e.printStackTrace();
-            if (statusLabel != null) {
-                statusLabel.setStyle("-fx-text-fill: red;");
-                statusLabel.setText("Ошибка перехода: " + e.getMessage());
-            }
+            showStatus("Критическая ошибка UI: " + e.getMessage(), true);
         }
     }
 
-    // Методы интерфейса (пока пустые)
-    @Override public void onError(String msg) { Platform.runLater(() -> statusLabel.setText(msg)); }
+    // Заглушки для методов, которые не используются на экране входа
     @Override public void onMessageReceived(AbstractMessage m) {}
     @Override public void onChannelHistoryReceived(List<AbstractMessage> h) {}
     @Override public void onServersListReceived(List<MessengerServer> s) {}
     @Override public void onChannelsListReceived(List<Channel> c) {}
-    @Override public void onDisconnected(String r) {}
 }
