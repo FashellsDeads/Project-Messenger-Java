@@ -1,6 +1,9 @@
 package test;
 
-import managers.ConnectionManager;
+import com.messenger.protocol.LoginRequest;
+import com.messenger.protocol.Packet;
+import com.messenger.protocol.PacketType;
+import com.messenger.protocol.RegisterRequest;
 import managers.IdGenerator;
 import model.*;
 
@@ -47,48 +50,70 @@ public class TestClient {
                 String line = scanner.nextLine().trim();
                 if (line.isEmpty()) continue;
 
-                String[] parts = line.split(" ", 3);
+                String[] parts = line.split(" ");
                 String cmd = parts[0].toLowerCase();
 
                 switch (cmd) {
                     case "register" -> {
                         // register <username> <email> <password>
-                        if (parts.length < 3) { printUsage("register <username> <email> <password>"); break; }
-                        String[] sub = line.split(" ", 4);
-                        if (sub.length < 4) { printUsage("register <username> <email> <password>"); break; }
-                        send(new AuthRequest(sub[1], sub[2], sub[3], true));
+                        if (parts.length < 4) {
+                            printUsage("register <username> <email> <password>");
+                            break;
+                        }
+
+                        sendPacket(
+                                PacketType.REGISTER_REQUEST,
+                                new RegisterRequest(parts[1], parts[2], parts[3])
+                        );
                     }
                     case "login" -> {
                         // login <username> <password>
                         if (parts.length < 3) { printUsage("login <username> <password>"); break; }
-                        send(new AuthRequest(parts[1], null, parts[2], false));
+                        sendPacket(PacketType.LOGIN_REQUEST,
+                                new LoginRequest(parts[1], parts[2])
+                        );
                     }
-                    case "chats" -> send(new Command(CommandType.GET_MY_CHATS));
+                    case "chats" -> sendPacket(PacketType.COMMAND,
+                            new Command(CommandType.GET_MY_CHATS)
+                    );
                     case "history" -> {
                         if (parts.length < 2) { printUsage("history <chatId>"); break; }
-                        send(new Command(CommandType.GET_HISTORY, parts[1]));
+                        sendPacket(PacketType.COMMAND,
+                                new Command(CommandType.GET_HISTORY, parts[1])
+                        );
                     }
-                    case "online" -> send(new Command(CommandType.GET_ONLINE_USERS));
+                    case "online" -> sendPacket(PacketType.COMMAND,
+                            new Command(CommandType.GET_ONLINE_USERS)
+                    );
                     case "msg" -> {
                         // msg <chatId> <text...>
                         if (parts.length < 3) { printUsage("msg <chatId> <text>"); break; }
                         int chatId = Integer.parseInt(parts[1]);
-                        send(new TextMessage(IdGenerator.generateId(), -1, chatId, parts[2]));
+                        sendPacket(PacketType.SEND_MESSAGE,
+                                new TextMessage(IdGenerator.generateId(), -1, chatId, parts[2])
+                        );
                     }
                     case "private" -> {
                         // private <username>
                         if (parts.length < 2) { printUsage("private <username>"); break; }
-                        send(new Command(CommandType.CREATE_PRIVATE_CHAT, parts[1]));
+                        sendPacket(PacketType.COMMAND,
+                                new Command(CommandType.CREATE_PRIVATE_CHAT, parts[1])
+                        );
                     }
                     case "channel" -> {
                         // channel <name>
                         if (parts.length < 2) { printUsage("channel <name>"); break; }
-                        send(new Command(CommandType.CREATE_CHANNEL, parts[1]));
+                        sendPacket(PacketType.COMMAND,
+                                new Command(CommandType.CREATE_CHANNEL, parts[1])
+                        );
                     }
                     case "join" -> {
                         // join <chatId>
                         if (parts.length < 2) { printUsage("join <chatId>"); break; }
-                        send(new Command(CommandType.JOIN_CHANNEL, parts[1]));
+
+                        sendPacket(PacketType.COMMAND,
+                                new Command(CommandType.JOIN_CHANNEL, parts[1])
+                        );
                     }
                     case "help" -> printHelp();
                     case "exit", "quit" -> {
@@ -104,9 +129,9 @@ public class TestClient {
         }
     }
 
-    private static void send(Object obj) {
+    private static <T extends Serializable> void sendPacket(PacketType type, T payload) {
         try {
-            out.writeObject(obj);
+            out.writeObject(new Packet<>(type, payload));
             out.flush();
         } catch (IOException e) {
             System.out.println("[Ошибка отправки]: " + e.getMessage());
@@ -114,6 +139,11 @@ public class TestClient {
     }
 
     private static void printReceived(Object obj) {
+        if (obj instanceof Packet<?> packet) {
+            printReceived(packet.getPayload());
+            return;
+        }
+
         String text = switch (obj) {
             case AuthResponse r     -> "[Auth] " + (r.success ? "✅ " : "❌ ") + r.message;
             case CommandResponse r -> {
@@ -127,13 +157,12 @@ public class TestClient {
             }
             case ServerEvent ev -> "[" + ev.getType() + "] " + ev.getMessage()
                     + (ev.getRelatedId() != -1 ? " (id=" + ev.getRelatedId() + ")" : "");
-            case TextMessage m      -> "[Сообщение] chatId=" + m.getChatId()
+            case TextMessage m -> "[Сообщение] chatId=" + m.getChatId()
                     + " Sender is: " + m.getSenderId()
                     + " | " + m.getContent();
-            default                 -> "[?] " + obj.toString();
+            default -> "[?] " + obj;
         };
 
-        // Печатаем поверх строки "> " чтобы не мешало вводу
         System.out.println("\n" + text);
         System.out.print("> ");
     }

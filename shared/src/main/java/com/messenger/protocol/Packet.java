@@ -24,11 +24,6 @@ public class Packet<T extends Serializable> implements Serializable {
 
     // ─── Конструкторы ────────────────────────────────────────────────────────
 
-    public Packet(PacketType commandResponse, Object response) {
-        this.timestamp = System.currentTimeMillis();
-        this.success = true;
-    }
-
     public Packet(PacketType type, T payload) {
         this.type = type;
         this.payload = payload;
