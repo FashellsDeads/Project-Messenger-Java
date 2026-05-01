@@ -97,7 +97,7 @@ public class CommandHandler {
     private CommandResponse createChannel(Command cmd, User currentUser) {
         String name = cmd.getArg(0);
         // serverId=0 — пока без привязки к серверу, для универа ок
-        Channel channel = chatManager.createAndSaveChannel(name, 0, currentUser);
+        Channel channel = chatManager.createAndSaveChannel(name, currentUser);
         if (channel == null)
             return CommandResponse.error("Не удалось создать канал");
 

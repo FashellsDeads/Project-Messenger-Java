@@ -12,27 +12,13 @@ import java.util.List;
 public class ChannelDAO {
 
     private final DatabaseManager db = DatabaseManager.getInstance();
+    private final ChannelMemberDAO channelMemberDAO;
+    private final UserDAO userDAO = new UserDAO();
 
-    // ─── Получить все каналы сервера ─────────────────────────────────────────
-    public List<Channel> findByServer(int serverId) {
-        String sql = "SELECT * FROM channels WHERE server_id = ? ORDER BY created_at ASC";
-        List<Channel> channels = new ArrayList<>();
-        Connection conn = null;
-        try {
-            conn = db.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, serverId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                channels.add(mapRow(rs));
-            }
-        } catch (SQLException e) {
-            System.err.println("[ChannelDAO] Ошибка findByServer: " + e.getMessage());
-        } finally {
-            db.releaseConnection(conn);
-        }
-        return channels;
+    public ChannelDAO(ChannelMemberDAO channelMemberDAO) {
+        this.channelMemberDAO = channelMemberDAO;
     }
+
 
     // ─── Найти канал по ID ────────────────────────────────────────────────────
     public Channel findById(int id) {
@@ -54,13 +40,12 @@ public class ChannelDAO {
 
     // ─── Создать канал ────────────────────────────────────────────────────────
     public Channel save(Channel channel) {
-        String sql = "INSERT INTO channels (name, server_id) VALUES (?, ?)";
+        String sql = "INSERT INTO channels (name) VALUES (?)";
         Connection conn = null;
         try {
             conn = db.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, channel.getName());
-            ps.setInt(2, channel.getServerId());
             ps.executeUpdate();
 
             ResultSet keys = ps.getGeneratedKeys();
@@ -74,12 +59,23 @@ public class ChannelDAO {
         }
     }
 
-    // ─── Маппинг ─────────────────────────────────────────────────────────────
+    public Channel loadFullChannel(int id) {
+        Channel channel = findById(id);
+        if (channel == null) return null;
+
+        List<Integer> members = channelMemberDAO.getMembers(id);
+
+        for (Integer userId : members) {
+            channel.addMember(userDAO.findById(userId));
+        }
+
+        return channel;
+    }
+
     private Channel mapRow(ResultSet rs) throws SQLException {
         Channel channel = new Channel();
         channel.setId(rs.getInt("id"));
         channel.setName(rs.getString("name"));
-        channel.setServerId(rs.getInt("server_id"));
         return channel;
     }
 }

@@ -8,7 +8,6 @@ public class Channel implements Chat{
     private String name;
     private Set<User> members = new HashSet<>();
     private List<AbstractMessage> history = new ArrayList<>();
-    private int serverId;
     public String getName() { return name; }
 
     public Channel(int id, String name) {
@@ -22,8 +21,6 @@ public class Channel implements Chat{
         this.id = id;
     }
     public void setName(String name)  { this.name = name; }
-    public void setServerId(int sid)  { this.serverId = sid; }
-    public int getServerId()          { return serverId; }
 
     @Override
     public int getId() {

@@ -1,6 +1,7 @@
 package managers;
 
 import com.messenger.db.ChannelDAO;
+import com.messenger.db.ChannelMemberDAO;
 import com.messenger.db.MessageDAO;
 import com.messenger.model.*;
 
@@ -12,10 +13,14 @@ public class ChatManager {
     private final Map<Integer, Chat> chats = new ConcurrentHashMap<>();
     private final ChannelDAO channelDAO;
     private final MessageDAO messageDAO;
+    private final ChannelMemberDAO channelMemberDAO;
 
-    public ChatManager(ChannelDAO channelDAO, MessageDAO messageDAO) {
+    public ChatManager(ChannelDAO channelDAO,
+                       MessageDAO messageDAO,
+                       ChannelMemberDAO channelMemberDAO) {
         this.channelDAO = channelDAO;
         this.messageDAO = messageDAO;
+        this.channelMemberDAO = channelMemberDAO;
     }
 
     public Chat getChat(int chatId) {
@@ -27,16 +32,20 @@ public class ChatManager {
     }
 
     // Создать канал и сразу сохранить в БД
-    public Channel createAndSaveChannel(String name, int serverId, User creator) {
+    public Channel createAndSaveChannel(String name, User creator) {
         Channel channel = new Channel();
         channel.setName(name);
-        channel.setServerId(serverId);
 
-        Channel saved = channelDAO.save(channel); // id приходит из БД
+        Channel saved = channelDAO.save(channel);
         if (saved == null) return null;
 
+        // сохраняем в БД участников
+        channelMemberDAO.addMember(saved.getId(), creator.getId());
+
+        // в память
         saved.addMember(creator);
         chats.put(saved.getId(), saved);
+
         return saved;
     }
 

@@ -1,6 +1,7 @@
 package server;
 
 import com.messenger.db.ChannelDAO;
+import com.messenger.db.ChannelMemberDAO;
 import com.messenger.db.MessageDAO;
 import com.messenger.db.UserDAO;
 import managers.*;
@@ -14,11 +15,12 @@ public class ChatServer {
 
     // DAO слой
     private final UserDAO    userDAO    = new UserDAO();
-    private final ChannelDAO channelDAO = new ChannelDAO();
+    private final ChannelMemberDAO channelMemberDAO = new ChannelMemberDAO();
+    private final ChannelDAO channelDAO = new ChannelDAO(channelMemberDAO);
     private final MessageDAO messageDAO = new MessageDAO();
 
     // Менеджеры
-    private final ChatManager       chatManager       = new ChatManager(channelDAO, messageDAO);
+    private final ChatManager       chatManager       = new ChatManager(channelDAO, messageDAO,channelMemberDAO);
     private final ConnectionManager connectionManager = new ConnectionManager();
     private final MessageDispatcher dispatcher        =
             new MessageDispatcher(chatManager, connectionManager, messageDAO);
