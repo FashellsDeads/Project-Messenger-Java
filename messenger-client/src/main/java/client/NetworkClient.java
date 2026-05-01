@@ -131,7 +131,7 @@ public class NetworkClient {
         sendPacket(new Packet<>(PacketType.COMMAND, command));
     }
     public void login(String email, String passwordHash) {
-        LoginRequest req w= new LoginRequest(email, passwordHash);
+        LoginRequest req = new LoginRequest(email, passwordHash);
         sendPacket(new Packet<>(PacketType.LOGIN_REQUEST, req));
     }
 
