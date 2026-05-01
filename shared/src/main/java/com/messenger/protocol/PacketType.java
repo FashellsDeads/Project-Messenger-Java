@@ -39,5 +39,5 @@ public enum PacketType {
     DISCONNECT,          // Клиент → Сервер: отключиться
     ERROR,               // Сервер → Клиент: сообщение об ошибке
     PING,                // Проверка соединения
-    PONG                 // Ответ на PING
+    EVENT, COMMAND_RESPONSE, COMMAND, PONG                 // Ответ на PING
 }

@@ -7,8 +7,10 @@ public abstract class AbstractMessage implements Serializable {
 
     private int id;
     private int senderId;
-    private int chatId;
+    private int chatId;           // твоё поле — оставляем
+    private String senderUsername; // новое — нужно DAO
     private LocalDateTime timestamp;
+    private MessageType type;     // новое — нужно DAO
 
     public AbstractMessage(int id, int senderId, int chatId) {
         this.id = id;
@@ -17,19 +19,23 @@ public abstract class AbstractMessage implements Serializable {
         this.timestamp = LocalDateTime.now();
     }
 
-    public int getId() {
-        return id;
-    }
+    // Абстрактный метод — каждый наследник реализует
+    public abstract String getDisplayContent();
 
-    public int getSenderId() {
-        return senderId;
-    }
+    // Старые геттеры — оставляем как есть
+    public int getId()                   { return id; }
+    public int getSenderId()             { return senderId; }
+    public int getChatId()               { return chatId; }
+    public LocalDateTime getTimestamp()  { return timestamp; }
 
-    public int getChatId() {
-        return chatId;
-    }
+    // Алиас для совместимости с DAO (они используют getChannelId)
+    public int getChannelId()            { return chatId; }
 
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
+    // Новые сеттеры для DAO
+    public void setId(int id)                        { this.id = id; }
+    public void setTimestamp(LocalDateTime timestamp){ this.timestamp = timestamp; }
+    public void setType(MessageType type)            { this.type = type; }
+    public MessageType getType()                     { return type; }
+    public String getSenderUsername()                { return senderUsername; }
+    public void setSenderUsername(String name)       { this.senderUsername = name; }
 }

@@ -1,5 +1,8 @@
 package server;
 
+import com.messenger.protocol.LoginRequest;
+import com.messenger.protocol.Packet;
+import com.messenger.protocol.PacketType;
 import managers.*;
 import model.*;
 
@@ -8,44 +11,44 @@ import java.net.Socket;
 
 public class ClientHandler implements Runnable {
 
-    private final Socket            socket;
+    private final Socket socket;
     private final MessageDispatcher dispatcher;
     private final ConnectionManager connectionManager;
-    private final AuthManager       authManager;
-    private final CommandHandler    commandHandler;
+    private final AuthManager authManager;
+    private final CommandHandler commandHandler;
 
-    private ObjectInputStream  in;
+    private ObjectInputStream in;
     private ObjectOutputStream out;
 
-    private User        currentUser = null;
-    private ClientState state       = ClientState.CONNECTED;
+    private User currentUser = null;
+    private ClientState state = ClientState.CONNECTED;
 
     public ClientHandler(Socket socket,
                          MessageDispatcher dispatcher,
                          ConnectionManager connectionManager,
                          AuthManager authManager,
                          CommandHandler commandHandler) {
-        this.socket            = socket;
-        this.dispatcher        = dispatcher;
+        this.socket = socket;
+        this.dispatcher = dispatcher;
         this.connectionManager = connectionManager;
-        this.authManager       = authManager;
-        this.commandHandler    = commandHandler;
+        this.authManager = authManager;
+        this.commandHandler = commandHandler;
     }
 
     @Override
     public void run() {
         try {
+            // ВАЖНО: сначала out, потом in
             out = new ObjectOutputStream(socket.getOutputStream());
-            in  = new ObjectInputStream(socket.getInputStream());
+            out.flush();
+            in = new ObjectInputStream(socket.getInputStream());
 
             Object obj;
             while ((obj = in.readObject()) != null) {
-                if (state != ClientState.AUTHENTICATED) {
-                    handleAuth(obj);
-                } else if (obj instanceof Command cmd) {
-                    send(commandHandler.handle(cmd, currentUser));
-                } else if (obj instanceof AbstractMessage msg) {
-                    dispatcher.dispatch(msg);
+                if (obj instanceof Packet<?> packet) {
+                    handlePacket(packet);
+                } else {
+                    System.out.println("Получен неизвестный объект: " + obj.getClass());
                 }
             }
 
@@ -57,64 +60,126 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void handleAuth(Object obj) {
-        if (!(obj instanceof AuthRequest req)) {
-            send(AuthResponse.error("Invalid request"));
+    private void handlePacket(Packet<?> packet) {
+
+        // 🔐 AUTH BLOCK
+        if (state != ClientState.AUTHENTICATED) {
+            handleAuth(packet);
             return;
         }
 
-        if (req.isRegister) {
-            currentUser = authManager.register(req.username, req.email, req.password);
-            if (currentUser != null) {
-                onAuthSuccess("Registered and logged in");
-            } else {
-                send(AuthResponse.error("Username already taken"));
+        // 🎯 MAIN ROUTER
+        switch (packet.getType()) {
+
+            case SEND_MESSAGE: {
+                AbstractMessage msg = (AbstractMessage) packet.getPayload();
+                dispatcher.dispatch(msg);
+                break;
             }
-        } else {
-            currentUser = authManager.login(req.username, req.password);
-            if (currentUser != null) {
-                onAuthSuccess("OK");
-            } else {
-                send(AuthResponse.error("Wrong credentials"));
+
+            case COMMAND: {
+                Command cmd = (Command) packet.getPayload();
+                Object response = commandHandler.handle(cmd, currentUser);
+                sendPacket(new Packet<>(PacketType.COMMAND_RESPONSE, response));
+                break;
             }
+
+            case DISCONNECT:
+                disconnect();
+                break;
+
+            default:
+                System.out.println("Неизвестный пакет: " + packet.getType());
         }
     }
 
-    private void onAuthSuccess(String message) {
-        state = ClientState.AUTHENTICATED;
-        connectionManager.addUser(currentUser.getId(), this, currentUser);
-        send(new AuthResponse(currentUser.getId(),true, message));
+    // ================= AUTH =================
 
-        // Уведомить всех онлайн что юзер появился
-        connectionManager.broadcastEvent(
-                new ServerEvent(ServerEventType.USER_ONLINE,
-                        currentUser.getUsername() + " онлайн",
-                        currentUser.getId()),
+    private void handleAuth(Packet<?> packet) {
+
+        switch (packet.getType()) {
+
+            case LOGIN_REQUEST: {
+                LoginRequest req = (LoginRequest) packet.getPayload();
+
+                currentUser = authManager.login(req.getEmail(), req.getPasswordHash());
+
+                if (currentUser != null) {
+                    onAuthSuccess();
+                } else {
+                    sendPacket(Packet.error(PacketType.LOGIN_RESPONSE, "Неверные данные"));
+                }
+                break;
+            }
+
+            case REGISTER_REQUEST: {
+                LoginRequest req = (LoginRequest) packet.getPayload();
+
+                currentUser = authManager.register(req.getEmail(), req.getEmail(), req.getPasswordHash());
+
+                if (currentUser != null) {
+                    onAuthSuccess();
+                } else {
+                    sendPacket(Packet.error(PacketType.REGISTER_RESPONSE, "Пользователь уже существует"));
+                }
+                break;
+            }
+
+            default:
+                sendPacket(Packet.error(PacketType.ERROR, "Требуется авторизация"));
+        }
+    }
+
+    private void onAuthSuccess() {
+        state = ClientState.AUTHENTICATED;
+
+        connectionManager.addUser(currentUser.getId(), this, currentUser);
+
+        // Ответ клиенту
+        sendPacket(new Packet<>(PacketType.LOGIN_RESPONSE, currentUser));
+
+        // Уведомление всех
+        ServerEvent event = new ServerEvent(
+                ServerEventType.USER_ONLINE,
+                currentUser.getUsername() + " онлайн",
                 currentUser.getId()
         );
+
+        connectionManager.broadcastEvent(event, currentUser.getId());
 
         System.out.println("Auth OK: " + currentUser.getUsername());
     }
 
+    // ================= DISCONNECT =================
+
     private void disconnect() {
         if (currentUser != null) {
-            connectionManager.broadcastEvent(
-                    new ServerEvent(ServerEventType.USER_OFFLINE,
-                            currentUser.getUsername() + " офлайн",
-                            currentUser.getId()),
+            ServerEvent event = new ServerEvent(
+                    ServerEventType.USER_OFFLINE,
+                    currentUser.getUsername() + " офлайн",
                     currentUser.getId()
             );
+
+            connectionManager.broadcastEvent(event, currentUser.getId());
             connectionManager.removeUser(currentUser.getId());
         }
+
         try { socket.close(); } catch (IOException ignored) {}
     }
 
-    public void sendMessage(AbstractMessage msg) { send(msg); }
-    public void sendEvent(ServerEvent event)     { send(event); }
+    // ================= SEND =================
 
-    private void send(Object obj) {
+    public void sendMessage(AbstractMessage msg) {
+        sendPacket(new Packet<>(PacketType.MESSAGE_BROADCAST, msg));
+    }
+
+    public void sendEvent(ServerEvent event) {
+        sendPacket(new Packet<>(PacketType.EVENT, event));
+    }
+
+    private void sendPacket(Packet<?> packet) {
         try {
-            out.writeObject(obj);
+            out.writeObject(packet);
             out.flush();
         } catch (IOException e) {
             System.out.println("Ошибка отправки: " + e.getMessage());
