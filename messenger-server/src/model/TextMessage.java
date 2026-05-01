@@ -9,6 +9,16 @@ public class TextMessage extends AbstractMessage {
         this.content = content;
     }
 
+    public TextMessage(int channelId, int senderId, String username, String content) {
+        super(0, senderId, channelId);
+        this.content = content;
+        setType(MessageType.TEXT);
+    }
+
+    @Override
+    public String getDisplayContent() { return content; }
+
+
     public String getContent() {
         return content;
     }

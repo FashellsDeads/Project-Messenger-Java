@@ -14,6 +14,12 @@ public class User implements Serializable {
 
     private model.UserStatus status;
     private LocalDateTime lastSeen;
+    private Role role; // новое поле
+
+    // Добавить no-arg конструктор для DAO
+    public User() {
+        this.status = UserStatus.OFFLINE;
+    }
 
     public User(int id, String username, String email, String password) {
         this.id = id;
@@ -24,6 +30,11 @@ public class User implements Serializable {
         this.lastSeen = LocalDateTime.now();
     }
 
+    public void setId(int id)                   { this.id = id; }
+    public void setEmail(String email)          { this.email = email; }
+    public void setPasswordHash(String hash)    { this.password = hash; }
+    public void setRole(Role role)              { this.role = role; }
+    public Role getRole()                       { return role; }
 
     public int getId() {
         return id;

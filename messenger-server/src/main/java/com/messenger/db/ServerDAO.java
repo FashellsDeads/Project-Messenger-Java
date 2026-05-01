@@ -1,7 +1,7 @@
 package com.messenger.db;
 
-import com.messenger.model.MessengerServer;
-import com.messenger.model.Role;
+import model.MessengerServer;
+import model.Role;
 
 import java.sql.*;
 import java.util.ArrayList;
