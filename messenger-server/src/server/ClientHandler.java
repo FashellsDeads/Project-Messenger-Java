@@ -59,7 +59,7 @@ public class ClientHandler implements Runnable {
 
     private void handleAuth(Object obj) {
         if (!(obj instanceof AuthRequest req)) {
-            send(new AuthResponse(false, "Invalid request"));
+            send(AuthResponse.error("Invalid request"));
             return;
         }
 
@@ -68,14 +68,14 @@ public class ClientHandler implements Runnable {
             if (currentUser != null) {
                 onAuthSuccess("Registered and logged in");
             } else {
-                send(new AuthResponse(false, "Username already taken"));
+                send(AuthResponse.error("Username already taken"));
             }
         } else {
             currentUser = authManager.login(req.username, req.password);
             if (currentUser != null) {
                 onAuthSuccess("OK");
             } else {
-                send(new AuthResponse(false, "Wrong credentials"));
+                send(AuthResponse.error("Wrong credentials"));
             }
         }
     }
@@ -83,7 +83,7 @@ public class ClientHandler implements Runnable {
     private void onAuthSuccess(String message) {
         state = ClientState.AUTHENTICATED;
         connectionManager.addUser(currentUser.getId(), this, currentUser);
-        send(new AuthResponse(true, message));
+        send(new AuthResponse(currentUser.getId(),true, message));
 
         // Уведомить всех онлайн что юзер появился
         connectionManager.broadcastEvent(
