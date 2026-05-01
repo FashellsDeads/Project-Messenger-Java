@@ -47,21 +47,6 @@ public class MainController implements NetworkListener {
             return;
         }
 
-        // --- НАЧАЛО КОСТЫЛЯ ---
-        if (!isRegistrationMode && login.equals("admin")) {
-            System.out.println("Вход через админ-панель (костыль)");
-
-            // Создаем заглушку пользователя (укажи поля как в твоем классе User)
-            // Если конструктор другой, подправь под себя.
-            User fakeAdmin = new User(login,login,password);
-            fakeAdmin.setUsername("Admin_Local");
-            // fakeAdmin.setId(1); // если нужно
-
-            navigateToMainChat(fakeAdmin);
-            return; // Выходим из метода, чтобы не отправлять сетевой запрос
-        }
-        // --- КОНЕЦ КОСТЫЛЯ ---
-
         mainActionBtn.setDisable(true);
         showStatus(isRegistrationMode ? "Регистрация..." : "Вход...", false);
 
