@@ -23,7 +23,6 @@ public class TestClient {
             out = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
-            // Отдельный поток — слушает сервер и печатает ответы
             Thread receiver = new Thread(() -> {
                 try {
                     while (running) {
