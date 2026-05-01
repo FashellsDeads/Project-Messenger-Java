@@ -2,7 +2,7 @@ package managers;
 
 import com.messenger.db.ChannelDAO;
 import com.messenger.db.MessageDAO;
-import model.*;
+import com.messenger.model.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

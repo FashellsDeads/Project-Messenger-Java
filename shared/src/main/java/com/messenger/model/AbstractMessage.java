@@ -3,55 +3,39 @@ package com.messenger.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * Абстрактный класс сообщения.
- * OOP: Абстракция — нельзя создать напрямую, только через наследников.
- * OOP: Наследование — TextMessage, FileMessage, SystemMessage расширяют этот класс.
- */
 public abstract class AbstractMessage implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private int id;
-    private int channelId;
     private int senderId;
-    private String senderUsername;
+    private int chatId;           // твоё поле — оставляем
+    private String senderUsername; // новое — нужно DAO
     private LocalDateTime timestamp;
-    private MessageType type;
+    private MessageType type;     // новое — нужно DAO
 
-    // ─── Конструктор ─────────────────────────────────────────────────────────
-
-    public AbstractMessage(int channelId, int senderId, String senderUsername, MessageType type) {
-        this.channelId = channelId;
+    public AbstractMessage(int id, int senderId, int chatId) {
+        this.id = id;
         this.senderId = senderId;
-        this.senderUsername = senderUsername;
-        this.type = type;
+        this.chatId = chatId;
         this.timestamp = LocalDateTime.now();
     }
 
-    /**
-     * Абстрактный метод — каждый наследник возвращает текст для отображения в UI.
-     * OOP: Полиморфизм — разное поведение у разных типов сообщений.
-     */
+    // Абстрактный метод — каждый наследник реализует
     public abstract String getDisplayContent();
 
-    // ─── Геттеры и сеттеры ───────────────────────────────────────────────────
+    // Старые геттеры — оставляем как есть
+    public int getId()                   { return id; }
+    public int getSenderId()             { return senderId; }
+    public int getChatId()               { return chatId; }
+    public LocalDateTime getTimestamp()  { return timestamp; }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    // Алиас для совместимости с DAO (они используют getChannelId)
+    public int getChannelId()            { return chatId; }
 
-    public int getChannelId() { return channelId; }
-    public void setChannelId(int channelId) { this.channelId = channelId; }
-
-    public int getSenderId() { return senderId; }
-    public void setSenderId(int senderId) { this.senderId = senderId; }
-
-    public String getSenderUsername() { return senderUsername; }
-    public void setSenderUsername(String senderUsername) { this.senderUsername = senderUsername; }
-
-    public LocalDateTime getTimestamp() { return timestamp; }
-    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
-
-    public MessageType getType() { return type; }
-    public void setType(MessageType type) { this.type = type; }
+    // Новые сеттеры для DAO
+    public void setId(int id)                        { this.id = id; }
+    public void setTimestamp(LocalDateTime timestamp){ this.timestamp = timestamp; }
+    public void setType(MessageType type)            { this.type = type; }
+    public MessageType getType()                     { return type; }
+    public String getSenderUsername()                { return senderUsername; }
+    public void setSenderUsername(String name)       { this.senderUsername = name; }
 }

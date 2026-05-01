@@ -1,4 +1,4 @@
-package model;
+package com.messenger.model;
 
 import java.util.ArrayList;
 import java.util.List;

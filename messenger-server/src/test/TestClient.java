@@ -1,11 +1,11 @@
 package test;
 
+import com.messenger.model.*;
 import com.messenger.protocol.LoginRequest;
 import com.messenger.protocol.Packet;
 import com.messenger.protocol.PacketType;
 import com.messenger.protocol.RegisterRequest;
 import managers.IdGenerator;
-import model.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -18,7 +18,7 @@ public class TestClient {
     private static volatile boolean running = true;
 
     public static void main(String[] args) {
-        try (Socket socket = new Socket("localhost", 9090)) {
+        try (Socket socket = new Socket("localhost", 9092)) {
 
             out = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());

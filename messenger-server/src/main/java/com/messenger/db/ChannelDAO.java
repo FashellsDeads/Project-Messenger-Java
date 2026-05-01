@@ -1,6 +1,6 @@
 package com.messenger.db;
 
-import model.*;
+import com.messenger.model.Channel;
 
 import java.sql.*;
 import java.util.ArrayList;

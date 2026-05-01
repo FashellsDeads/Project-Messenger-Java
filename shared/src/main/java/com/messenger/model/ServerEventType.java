@@ -1,4 +1,4 @@
-package model;
+package com.messenger.model;
 
 public enum ServerEventType {
     PRIVATE_CHAT_INVITE,  // тебя добавили в приватный чат

@@ -1,10 +1,9 @@
 package managers;
 
-import model.*;
+import com.messenger.model.*;
 import server.ClientHandler;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CommandHandler {

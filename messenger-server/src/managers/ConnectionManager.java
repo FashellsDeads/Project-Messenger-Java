@@ -1,7 +1,7 @@
 package managers;
 
-import model.ServerEvent;
-import model.User;
+import com.messenger.model.ServerEvent;
+import com.messenger.model.User;
 import server.ClientHandler;
 
 import java.util.*;
