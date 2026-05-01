@@ -16,6 +16,8 @@ public class ChatServer {
     private final AuthManager authManager =
             new AuthManager(chatManager);
 
+    CommandHandler commandHandler = new CommandHandler(authManager, chatManager, connectionManager);
+
     public ChatServer(int port) {
         this.port = port;
     }
@@ -34,7 +36,8 @@ public class ChatServer {
                         clientSocket,
                         dispatcher,
                         connectionManager,
-                        authManager
+                        authManager,
+                        commandHandler
                 );
 
                 new Thread(handler).start();

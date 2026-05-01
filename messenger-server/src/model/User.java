@@ -10,16 +10,16 @@ public class User implements Serializable {
     private int id;
     private String username;
     private String email;
-    private String passwordHash;
+    private String password;
 
     private model.UserStatus status;
     private LocalDateTime lastSeen;
 
-    public User(int id, String username, String email, String passwordHash) {
+    public User(int id, String username, String email, String password) {
         this.id = id;
         this.username = username;
         this.email = email;
-        this.passwordHash = passwordHash;
+        this.password = password;
         this.status = model.UserStatus.OFFLINE;
         this.lastSeen = LocalDateTime.now();
     }
@@ -37,8 +37,8 @@ public class User implements Serializable {
         return email;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
 
     public model.UserStatus getStatus() {

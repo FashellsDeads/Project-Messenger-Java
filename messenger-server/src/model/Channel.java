@@ -9,6 +9,8 @@ public class Channel implements Chat{
     private Set<User> members = new HashSet<>();
     private List<AbstractMessage> history = new ArrayList<>();
 
+    public String getName() { return name; }
+
     public Channel(int id, String name) {
         this.id = id;
         this.name = name;

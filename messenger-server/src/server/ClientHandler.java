@@ -8,25 +8,28 @@ import java.net.Socket;
 
 public class ClientHandler implements Runnable {
 
-    private final Socket socket;
+    private final Socket            socket;
     private final MessageDispatcher dispatcher;
     private final ConnectionManager connectionManager;
-    private final AuthManager authManager;
+    private final AuthManager       authManager;
+    private final CommandHandler    commandHandler;
 
-    private ObjectInputStream in;
+    private ObjectInputStream  in;
     private ObjectOutputStream out;
 
-    private User currentUser = null;
-    private ClientState state = ClientState.CONNECTED;
+    private User        currentUser = null;
+    private ClientState state       = ClientState.CONNECTED;
 
     public ClientHandler(Socket socket,
                          MessageDispatcher dispatcher,
                          ConnectionManager connectionManager,
-                         AuthManager authManager) {
-        this.socket = socket;
-        this.dispatcher = dispatcher;
+                         AuthManager authManager,
+                         CommandHandler commandHandler) {
+        this.socket            = socket;
+        this.dispatcher        = dispatcher;
         this.connectionManager = connectionManager;
-        this.authManager = authManager;
+        this.authManager       = authManager;
+        this.commandHandler    = commandHandler;
     }
 
     @Override
@@ -39,13 +42,14 @@ public class ClientHandler implements Runnable {
             while ((obj = in.readObject()) != null) {
                 if (state != ClientState.AUTHENTICATED) {
                     handleAuth(obj);
+                } else if (obj instanceof Command cmd) {
+                    send(commandHandler.handle(cmd, currentUser));
                 } else if (obj instanceof AbstractMessage msg) {
                     dispatcher.dispatch(msg);
                 }
             }
 
         } catch (EOFException ignored) {
-            // клиент закрыл соединение нормально
         } catch (Exception e) {
             System.out.println("Клиент отключился: " + e.getMessage());
         } finally {
@@ -55,60 +59,65 @@ public class ClientHandler implements Runnable {
 
     private void handleAuth(Object obj) {
         if (!(obj instanceof AuthRequest req)) {
-            sendAuthResponse(new AuthResponse(false, "Invalid request"));
+            send(new AuthResponse(false, "Invalid request"));
             return;
         }
 
         if (req.isRegister) {
-            // регистрация
-            currentUser = authManager.register(req.username,"email shold be here", req.password);
+            currentUser = authManager.register(req.username, req.email, req.password);
             if (currentUser != null) {
-                state = ClientState.AUTHENTICATED;
-                connectionManager.addUser(currentUser.getId(), this);
-                sendAuthResponse(new AuthResponse(true, "Registered and logged in"));
-                System.out.println("User registered: " + currentUser.getUsername());
+                onAuthSuccess("Registered and logged in");
             } else {
-                sendAuthResponse(new AuthResponse(false, "Username already taken"));
+                send(new AuthResponse(false, "Username already taken"));
             }
         } else {
-            // логин
             currentUser = authManager.login(req.username, req.password);
             if (currentUser != null) {
-                state = ClientState.AUTHENTICATED;
-                connectionManager.addUser(currentUser.getId(), this);
-                sendAuthResponse(new AuthResponse(true, "OK"));
-                System.out.println("User logged in: " + currentUser.getUsername());
+                onAuthSuccess("OK");
             } else {
-                sendAuthResponse(new AuthResponse(false, "Wrong credentials"));
+                send(new AuthResponse(false, "Wrong credentials"));
             }
         }
     }
 
-    // отдельный метод — AuthResponse не AbstractMessage
-    private void sendAuthResponse(AuthResponse response) {
-        try {
-            out.writeObject(response);
-            out.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    private void onAuthSuccess(String message) {
+        state = ClientState.AUTHENTICATED;
+        connectionManager.addUser(currentUser.getId(), this, currentUser);
+        send(new AuthResponse(true, message));
 
-    public void sendMessage(AbstractMessage msg) {
-        try {
-            out.writeObject(msg);
-            out.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Уведомить всех онлайн что юзер появился
+        connectionManager.broadcastEvent(
+                new ServerEvent(ServerEventType.USER_ONLINE,
+                        currentUser.getUsername() + " онлайн",
+                        currentUser.getId()),
+                currentUser.getId()
+        );
+
+        System.out.println("Auth OK: " + currentUser.getUsername());
     }
 
     private void disconnect() {
         if (currentUser != null) {
+            connectionManager.broadcastEvent(
+                    new ServerEvent(ServerEventType.USER_OFFLINE,
+                            currentUser.getUsername() + " офлайн",
+                            currentUser.getId()),
+                    currentUser.getId()
+            );
             connectionManager.removeUser(currentUser.getId());
         }
+        try { socket.close(); } catch (IOException ignored) {}
+    }
+
+    public void sendMessage(AbstractMessage msg) { send(msg); }
+    public void sendEvent(ServerEvent event)     { send(event); }
+
+    private void send(Object obj) {
         try {
-            socket.close();
-        } catch (IOException ignored) {}
+            out.writeObject(obj);
+            out.flush();
+        } catch (IOException e) {
+            System.out.println("Ошибка отправки: " + e.getMessage());
+        }
     }
 }

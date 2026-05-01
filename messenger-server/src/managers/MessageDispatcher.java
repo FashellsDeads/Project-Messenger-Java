@@ -30,7 +30,7 @@ public class MessageDispatcher {
         System.out.println("👥 Участников: " + chat.getParticipants().size());
 
         for (User user : chat.getParticipants()) {
-            ClientHandler handler = connectionManager.getUser(user.getId());
+            ClientHandler handler = connectionManager.getHandler(user.getId());
 
             if (handler != null) {
                 System.out.println("➡️ Отправляем пользователю: " + user.getId());
