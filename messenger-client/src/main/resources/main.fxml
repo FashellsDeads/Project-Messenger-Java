@@ -18,32 +18,33 @@
               AnchorPane.leftAnchor="0.0"
               AnchorPane.rightAnchor="0.0">
 
-            <!-- Панель каналов (теперь левая самая) -->
             <VBox minWidth="240.0" prefWidth="240.0"
                   style="-fx-background-color: #2F3136;">
 
                 <children>
-                    <Label fx:id="currentChannelLabel"
-                           prefHeight="48.0" prefWidth="240.0"
-                           style="-fx-border-color: #202225; -fx-border-width: 0 0 1 0; -fx-text-fill: white;"
-                           text="Каналы">
-
-                        <padding>
-                            <Insets left="15.0"/>
-                        </padding>
-
-                        <font>
-                            <Font name="System Bold" size="14.0"/>
-                        </font>
-                    </Label>
+                    <HBox alignment="CENTER_LEFT" prefHeight="48.0" prefWidth="240.0"
+                          style="-fx-border-color: #202225; -fx-border-width: 0 0 1 0;">
+                        <padding><Insets left="15.0" right="8.0"/></padding>
+                        <children>
+                            <Label fx:id="currentChannelLabel"
+                                   style="-fx-text-fill: white;"
+                                   text="Чаты" HBox.hgrow="ALWAYS">
+                                <font><Font name="System Bold" size="14.0"/></font>
+                            </Label>
+                            <Button onAction="#handleCreateChat"
+                                    text="+"
+                                    style="-fx-background-color: #5865F2; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 28; -fx-min-height: 28; -fx-max-width: 28; -fx-max-height: 28; -fx-cursor: hand;">
+                                <font><Font name="System Bold" size="16.0"/></font>
+                            </Button>
+                        </children>
+                    </HBox>
 
                     <ListView fx:id="chatsList"
                               VBox.vgrow="ALWAYS"
-                              style="-fx-background-color: transparent;"/>
+                              style="-fx-background-color: #2F3136; -fx-background: #2F3136; -fx-control-inner-background: #2F3136; -fx-border-color: transparent;"/>
                 </children>
             </VBox>
 
-            <!-- ЧАТ -->
             <VBox style="-fx-background-color: #36393F;"
                   HBox.hgrow="ALWAYS">
 
@@ -51,7 +52,7 @@
 
                     <ListView fx:id="messagesList"
                               VBox.vgrow="ALWAYS"
-                              style="-fx-background-color: transparent;"/>
+                              style="-fx-background-color: #36393F; -fx-background: #36393F; -fx-control-inner-background: #36393F; -fx-border-color: transparent;"/>
 
                     <HBox alignment="CENTER"
                           minHeight="80.0"
@@ -66,7 +67,7 @@
                             <TextField fx:id="messageInput"
                                        prefHeight="44.0"
                                        promptText="Написать сообщение..."
-                                       style="-fx-background-color: #40444B; -fx-text-fill: white; -fx-background-radius: 8;"
+                                       style="-fx-background-color: #40444B; -fx-text-fill: white; -fx-prompt-text-fill: #72767D; -fx-background-radius: 8;"
                                        HBox.hgrow="ALWAYS"/>
 
                             <Button mnemonicParsing="false"
@@ -74,7 +75,7 @@
                                     prefHeight="44.0"
                                     prefWidth="100.0"
                                     text="ОТПРАВИТЬ"
-                                    style="-fx-background-color: #5865F2; -fx-text-fill: white; -fx-background-radius: 8;">
+                                    style="-fx-background-color: #5865F2; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;">
 
                                 <font>
                                     <Font name="System Bold" size="12.0"/>

@@ -30,7 +30,6 @@ public class ConnectionManager {
         return new ArrayList<>(activeUsers.values());
     }
 
-    // Рассылка события всем онлайн, кроме одного юзера
     public void broadcastEvent(ServerEvent event, int excludeUserId) {
         activeHandlers.forEach((userId, handler) -> {
             if (userId != excludeUserId)

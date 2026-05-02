@@ -2,7 +2,6 @@ package client;
 
 import com.messenger.model.User;
 
-
 public class ClientSession {
     private static ClientSession instance;
     private User currentUser;

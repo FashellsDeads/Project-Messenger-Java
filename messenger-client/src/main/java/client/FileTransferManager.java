@@ -16,7 +16,6 @@ public class FileTransferManager {
         this.networkClient = networkClient;
     }
 
-
     public void uploadFile(File file, int channelId) {
         new Thread(() -> {
             try (FileInputStream fis = new FileInputStream(file)) {

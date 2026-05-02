@@ -35,7 +35,6 @@ public class NetworkClient {
 
             System.out.println("Socket connected");
 
-
             this.out = new ObjectOutputStream(socket.getOutputStream());
             this.out.flush();
             this.in = new ObjectInputStream(socket.getInputStream());
@@ -53,7 +52,6 @@ public class NetworkClient {
             throw e;
         }
     }
-
 
     @SuppressWarnings("unchecked")
     private void listenForPackets() {
@@ -81,7 +79,6 @@ public class NetworkClient {
             disconnect();
         }
     }
-
 
     private void processPacket(Packet<?> packet) {
         if (listener == null) return;
@@ -160,7 +157,6 @@ public class NetworkClient {
         sendPacket(new Packet<>(PacketType.REGISTER_REQUEST,
                 new RegisterRequest(username, email, password)));
     }
-
 
     public void reconnect(String host, int port) throws IOException {
         disconnect();

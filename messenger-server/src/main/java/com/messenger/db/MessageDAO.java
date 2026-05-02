@@ -88,7 +88,7 @@ public class MessageDAO {
                         username != null ? username : "System",
                         SystemMessage.EventType.USER_JOINED);
                 break;
-            default: // TEXT
+            default:
                 message = new TextMessage(channelId, senderId,
                         username != null ? username : "Unknown", content);
                 break;

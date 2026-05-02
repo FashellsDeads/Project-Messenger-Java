@@ -6,7 +6,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class ChannelDAO {
 
     private final DatabaseManager db = DatabaseManager.getInstance();
@@ -16,7 +15,6 @@ public class ChannelDAO {
     public ChannelDAO(ChannelMemberDAO channelMemberDAO) {
         this.channelMemberDAO = channelMemberDAO;
     }
-
 
     public Channel findById(int id) {
         String sql = "SELECT * FROM channels WHERE id = ?";

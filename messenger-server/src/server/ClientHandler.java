@@ -39,7 +39,7 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            // ВАЖНО: сначала out, потом in
+
             out = new ObjectOutputStream(socket.getOutputStream());
             out.flush();
             in = new ObjectInputStream(socket.getInputStream());
@@ -63,13 +63,11 @@ public class ClientHandler implements Runnable {
 
     private void handlePacket(Packet<?> packet) {
 
-        // 🔐 AUTH BLOCK
         if (state != ClientState.AUTHENTICATED) {
             handleAuth(packet);
             return;
         }
 
-        // 🎯 MAIN ROUTER
         switch (packet.getType()) {
 
             case SEND_MESSAGE: {
@@ -93,8 +91,6 @@ public class ClientHandler implements Runnable {
                 System.out.println("Неизвестный пакет: " + packet.getType());
         }
     }
-
-    // ================= AUTH =================
 
     private void handleAuth(Packet<?> packet) {
 
@@ -140,10 +136,8 @@ public class ClientHandler implements Runnable {
 
         connectionManager.addUser(currentUser.getId(), this, currentUser);
 
-        // Ответ клиенту
         sendPacket(new Packet<>(PacketType.LOGIN_RESPONSE, currentUser));
 
-        // Уведомление всех
         ServerEvent event = new ServerEvent(
                 ServerEventType.USER_ONLINE,
                 currentUser.getUsername() + " онлайн",
@@ -154,8 +148,6 @@ public class ClientHandler implements Runnable {
 
         System.out.println("Auth OK: " + currentUser.getUsername());
     }
-
-    // ================= DISCONNECT =================
 
     private void disconnect() {
         if (currentUser != null) {
@@ -171,8 +163,6 @@ public class ClientHandler implements Runnable {
 
         try { socket.close(); } catch (IOException ignored) {}
     }
-
-    // ================= SEND =================
 
     public void sendMessage(AbstractMessage msg) {
         sendPacket(new Packet<>(PacketType.MESSAGE_BROADCAST, msg));

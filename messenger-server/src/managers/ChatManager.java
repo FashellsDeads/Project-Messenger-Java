@@ -31,14 +31,12 @@ public class ChatManager {
 
         if (chat != null) return chat;
 
-        // пробуем private chat
         PrivateChat pc = privateChatDAO.findById(chatId);
         if (pc != null) {
             chats.put(chatId, pc);
             return pc;
         }
 
-        // channels
         Channel ch = channelDAO.loadFullChannel(chatId);
         if (ch != null) {
             chats.put(chatId, ch);
@@ -56,7 +54,6 @@ public class ChatManager {
         chats.put(chat.getId(), chat);
     }
 
-    // Создать канал и сразу сохранить в БД
     public Channel createAndSaveChannel(String name, User creator) {
         Channel channel = new Channel();
         channel.setName(name);
@@ -64,26 +61,29 @@ public class ChatManager {
         Channel saved = channelDAO.save(channel);
         if (saved == null) return null;
 
-        // сохраняем в БД участников
         channelMemberDAO.addMember(saved.getId(), creator.getId());
 
-        // в память
         saved.addMember(creator);
         chats.put(saved.getId(), saved);
 
         return saved;
     }
 
-    // История: сначала смотрим в памяти, если пусто — идём в БД
     public List<AbstractMessage> getHistory(int chatId) {
         return messageDAO.findByChannel(chatId, 50);
     }
 
     public Optional<PrivateChat> findPrivateChat(int userId1, int userId2) {
-        return chats.values().stream()
+        Optional<PrivateChat> inMemory = chats.values().stream()
                 .filter(c -> c instanceof PrivateChat)
                 .map(c -> (PrivateChat) c)
                 .filter(pc -> pc.hasUser(userId1) && pc.hasUser(userId2))
+                .findFirst();
+
+        if (inMemory.isPresent()) return inMemory;
+
+        return privateChatDAO.findByUser(userId1).stream()
+                .filter(pc -> pc.hasUser(userId2))
                 .findFirst();
     }
 
@@ -91,17 +91,15 @@ public class ChatManager {
 
         List<ChatInfo> result = new ArrayList<>();
 
-        // 🔥 сначала каналы из БД — грузим полностью (с участниками!)
         List<Channel> channels = channelDAO.findByUser(userId);
 
         for (Channel ch : channels) {
             result.add(new ChatInfo(ch.getId(), "CHANNEL", ch.getName()));
-            // loadFullChannel загружает и членов канала, иначе getParticipants() вернёт пустой Set
+
             Channel full = channelDAO.loadFullChannel(ch.getId());
             chats.putIfAbsent(ch.getId(), full != null ? full : ch);
         }
 
-        // 🔥 теперь ПРИВАТНЫЕ ЧАТЫ — ВАЖНО: не из chats, а из БД или DAO
         List<PrivateChat> privateChats = privateChatDAO.findByUser(userId);
 
         for (PrivateChat pc : privateChats) {

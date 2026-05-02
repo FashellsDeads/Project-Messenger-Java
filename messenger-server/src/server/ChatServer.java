@@ -10,14 +10,12 @@ public class ChatServer {
 
     private final int port;
 
-    // DAO слой
     private final UserDAO    userDAO    = new UserDAO();
     private final ChannelMemberDAO channelMemberDAO = new ChannelMemberDAO();
     private final ChannelDAO channelDAO = new ChannelDAO(channelMemberDAO);
     private final PrivateChatDAO privateChatDAO = new PrivateChatDAO();
     private final MessageDAO messageDAO = new MessageDAO();
 
-    // Менеджеры
     private final ChatManager       chatManager       = new ChatManager(channelDAO, messageDAO,channelMemberDAO,privateChatDAO);
     private final ConnectionManager connectionManager = new ConnectionManager();
     private final MessageDispatcher dispatcher        =

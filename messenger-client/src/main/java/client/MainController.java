@@ -28,8 +28,6 @@ public class MainController implements NetworkListener {
 
     @FXML
     public void initialize() {
-
-        // 2. Логика скрытия поля Email для режима входа
         if (emailField != null) {
             emailLabel.setVisible(false);
             emailLabel.setManaged(false);
@@ -37,20 +35,15 @@ public class MainController implements NetworkListener {
             emailField.setManaged(false);
         }
 
-        // 3. ПОДКЛЮЧЕНИЕ К СЕРВЕРУ (Код, который всё оживляет)
         try {
-            // Используем параметры из твоего успешного консольного теста
             String host = "localhost";
             int port = 9092;
 
-            System.out.println("[GUI] Попытка подключения к " + host + ":" + port);
             JavaFXClientLauncher.networkClient.connect(host, port, this, new FxDispatcher());
-
             showStatus("Связь с сервером установлена", false);
         } catch (Exception e) {
             e.printStackTrace();
             showStatus("Сервер недоступен! Проверь запущен ли бэкенд.", true);
-            // Блокируем кнопку, чтобы не пытаться слать пакеты в закрытый сокет
             mainActionBtn.setDisable(true);
         }
     }
@@ -99,11 +92,8 @@ public class MainController implements NetworkListener {
         mainActionBtn.getScene().getWindow().sizeToScene();
     }
 
-    // --- Методы NetworkListener (вызываются из NetworkClient) ---
-
     @Override
     public void onLoginSuccess(User user) {
-        System.out.println("Авторизация успешна: " + user.getUsername());
         navigateToMainChat(user);
     }
 
@@ -120,10 +110,7 @@ public class MainController implements NetworkListener {
     }
 
     @Override
-    public void onCommandResponse(CommandResponse payload) {
-
-    }
-    // --- Вспомогательные методы ---
+    public void onCommandResponse(CommandResponse payload) {}
 
     private void showStatus(String text, boolean isError) {
         statusLabel.setText(text);
@@ -139,7 +126,6 @@ public class MainController implements NetworkListener {
             chatController.setUser(user);
             chatController.Init();
             JavaFXClientLauncher.networkClient.setListener(chatController);
-            // JavaFXClientLauncher.networkClient.setListener(chatController);
 
             Stage stage = (Stage) mainActionBtn.getScene().getWindow();
             stage.setScene(new Scene(root, 1000, 700));

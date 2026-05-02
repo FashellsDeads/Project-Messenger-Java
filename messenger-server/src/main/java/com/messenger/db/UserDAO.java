@@ -83,7 +83,6 @@ public class UserDAO {
             ps.setString(3, user.getPassword());
             ps.executeUpdate();
 
-            // Получаем сгенерированный ID
             ResultSet keys = ps.getGeneratedKeys();
             if (keys.next()) {
                 user.setId(keys.getInt(1));

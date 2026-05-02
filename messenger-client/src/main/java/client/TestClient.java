@@ -143,10 +143,6 @@ public class TestClient implements NetworkListener {
         }
     }
 
-    // =========================
-    // NetworkListener
-    // =========================
-
     @Override
     public void onLoginSuccess(User user) {
         System.out.println("\n✅ Login: " + user.getUsername());
@@ -212,11 +208,6 @@ public class TestClient implements NetworkListener {
         System.out.println("[EVENT] " + event.getType() + ": " + event.getMessage());
         prompt();
     }
-
-
-    // =========================
-    // UI
-    // =========================
 
     private void prompt() {
         System.out.print("> ");

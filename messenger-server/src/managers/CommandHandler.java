@@ -1,7 +1,6 @@
 package managers;
 
 import com.messenger.model.*;
-import com.messenger.protocol.IdGenerator;
 import server.ClientHandler;
 
 import java.io.Serializable;
@@ -32,8 +31,6 @@ public class CommandHandler {
         };
     }
 
-    // ── Чаты ─────────────────────────────────────────────────────────────────
-
     private CommandResponse createPrivateChat(Command cmd, User currentUser) {
         String targetName = cmd.getArg(0);
 
@@ -48,10 +45,12 @@ public class CommandHandler {
         if (existing.isPresent())
             return new CommandResponse(true, "Chat already exists", existing.get().getId());
 
-        PrivateChat chat = new PrivateChat(IdGenerator.generateId(), currentUser, target);
+        PrivateChat chat = chatManager.createAndSavePrivateChat(currentUser.getId(), target.getId());
+        if (chat == null)
+            return CommandResponse.error("Failed to create private chat");
+
         chatManager.addChat(chat);
 
-        // Push второму участнику если онлайн
         ClientHandler targetHandler = connectionManager.getHandler(target.getId());
         if (targetHandler != null) {
             targetHandler.sendEvent(new ServerEvent(
@@ -77,7 +76,6 @@ public class CommandHandler {
 
         channel.addMember(currentUser);
 
-        // Уведомить остальных участников канала
         for (User member : channel.getParticipants()) {
             if (member.getId() == currentUser.getId()) continue;
             ClientHandler h = connectionManager.getHandler(member.getId());
@@ -96,7 +94,7 @@ public class CommandHandler {
 
     private CommandResponse createChannel(Command cmd, User currentUser) {
         String name = cmd.getArg(0);
-        // serverId=0 — пока без привязки к серверу, для универа ок
+
         Channel channel = chatManager.createAndSaveChannel(name, currentUser);
         if (channel == null)
             return CommandResponse.error("Не удалось создать канал");
@@ -104,8 +102,6 @@ public class CommandHandler {
         System.out.println("Channel '" + name + "' created by " + currentUser.getUsername());
         return new CommandResponse(true, "Channel created: " + name, channel.getId());
     }
-
-    // ── Запросы данных ────────────────────────────────────────────────────────
 
     private CommandResponse getMyChats(User currentUser) {
         List<ChatInfo> chatList = chatManager.getUserChats(currentUser.getId());
@@ -124,7 +120,6 @@ public class CommandHandler {
         if (!isMember)
             return CommandResponse.error("Access denied");
 
-        // Теперь через ChatManager — он сам решает память или БД
         List<AbstractMessage> history = chatManager.getHistory(chatId);
         return new CommandResponse(true, "OK", chatId, (Serializable) history);
     }

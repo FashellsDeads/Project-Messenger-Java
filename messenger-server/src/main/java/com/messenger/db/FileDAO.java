@@ -6,14 +6,6 @@ public class FileDAO {
 
     private final DatabaseManager db = DatabaseManager.getInstance();
 
-    /**
-     * Сохранить информацию о файле.
-     * @param messageId  ID сообщения к которому прикреплён файл
-     * @param fileName   оригинальное имя файла
-     * @param filePath   путь на сервере где хранится файл
-     * @param fileSize   размер в байтах
-     * @return ID записи в БД или -1 при ошибке
-     */
     public int save(int messageId, String fileName, String filePath, long fileSize) {
         String sql = "INSERT INTO files (message_id, file_name, file_path, file_size) VALUES (?, ?, ?, ?)";
         Connection conn = null;

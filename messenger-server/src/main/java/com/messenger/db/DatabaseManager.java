@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-
 public class DatabaseManager {
 
     private static DatabaseManager instance;
@@ -90,7 +89,6 @@ public class DatabaseManager {
 
         Connection connection = pool.remove(pool.size() - 1);
 
-        // Проверяем что соединение живое
         if (!connection.isValid(2)) {
             connection = createConnection();
         }

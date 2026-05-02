@@ -19,16 +19,16 @@ public class AuthManager {
     }
 
     public User register(String username, String email, String password) {
-        // Проверяем БД, а не HashMap
+
         if (userDAO.existsByUsername(username)) return null;
 
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
-        user.setPasswordHash(password); // позже сюда придёт BCrypt
+        user.setPasswordHash(password);
         user.setStatus(UserStatus.OFFLINE);
 
-        User saved = userDAO.save(user); // id присваивает БД
+        User saved = userDAO.save(user);
         if (saved == null) return null;
 
         chatManager.addChat(new SelfChat(IdGenerator.generateId(), saved));

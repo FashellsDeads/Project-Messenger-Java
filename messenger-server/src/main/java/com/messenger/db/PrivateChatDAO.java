@@ -12,7 +12,6 @@ public class PrivateChatDAO {
     private final DatabaseManager db = DatabaseManager.getInstance();
     private final UserDAO userDAO = new UserDAO();
 
-    // найти чат по id
     public PrivateChat findById(int id) {
         String sql = "SELECT * FROM private_chats WHERE id = ?";
 
@@ -68,7 +67,6 @@ public class PrivateChatDAO {
         return null;
     }
 
-    // найти все private чаты пользователя
     public List<PrivateChat> findByUser(int userId) {
         String sql = """
             SELECT * FROM private_chats
@@ -100,7 +98,6 @@ public class PrivateChatDAO {
         return result;
     }
 
-    // создать private чат
     public PrivateChat save(int user1Id, int user2Id) {
         String sql = "INSERT INTO private_chats (user1_id, user2_id) VALUES (?, ?)";
 
@@ -135,7 +132,6 @@ public class PrivateChatDAO {
         return null;
     }
 
-    // маппинг
     private PrivateChat mapRow(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         int u1 = rs.getInt("user1_id");

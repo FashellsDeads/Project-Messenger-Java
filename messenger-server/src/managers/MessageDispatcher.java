@@ -27,13 +27,10 @@ public class MessageDispatcher {
             return;
         }
 
-        // Сохраняем в БД перед рассылкой
         messageDAO.save(msg);
 
-        // Сохраняем в памяти
         chat.sendMessage(msg);
 
-        // Рассылаем всем участникам онлайн
         for (User user : chat.getParticipants()) {
             ClientHandler handler = connectionManager.getHandler(user.getId());
             if (handler != null) {
