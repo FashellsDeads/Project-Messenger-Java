@@ -13,12 +13,10 @@
 ## Описание
 
 JavaFX Messenger — многопользовательский десктопный мессенджер с поддержкой:
--  Серверов (пространств для общения)
+-  Приватные чаты (пространств для общения)
 -  Каналов внутри серверов
--  Ролей: Admin, Moderator, Member
--  Передачи файлов
 -  Истории сообщений из базы данных
--  Аутентификации с хэшированием паролей
+-  Аутентификации 
 
 ---
 
@@ -37,7 +35,7 @@ JavaFX Messenger — многопользовательский десктопн
                                                  ┌──────────────────────┐
                                                  │     MySQL Database   │
                                                  │  users, channels,    │
-                                                 │  messages, files...  │
+                                                 │  messages            │
                                                  └──────────────────────┘
 ```
 
@@ -148,7 +146,7 @@ java --module-path /path/to/javafx-sdk/lib \
 | Критерий | % | Где реализовано |
 |----------|----|-----------------|
 | OOP: Классы и объекты | 10% | `shared/model/` — User, Message, Channel и др. |
-| OOP: Полиморфизм и наследование | 10% | `AbstractMessage` → TextMessage, FileMessage, SystemMessage |
+| OOP: Полиморфизм и наследование | 10% | `AbstractMessage` → TextMessage, SystemMessage |
 | OOP: Абстракции и интерфейсы | 5% | `MessageHandler`, `UserRepository`, `Serializable` |
 | Collections | 5% | `Map<Integer, ClientHandler>`, `List<Message>`, `Set<String>` |
 | Сериализация / File I/O | 10% | Packet по сети + сохранение файлов + конфиг |
