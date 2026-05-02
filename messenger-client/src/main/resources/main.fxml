@@ -22,6 +22,11 @@
             <VBox minWidth="240.0" prefWidth="240.0"
                   style="-fx-background-color: #2F3136;">
 
+                <Button text="+"
+                        onAction="#handleCreateChat"
+                        prefWidth="40"
+                        style="-fx-background-color: #5865F2; -fx-text-fill: white;"/>
+
                 <children>
                     <Label fx:id="currentChannelLabel"
                            prefHeight="48.0" prefWidth="240.0"
@@ -37,7 +42,7 @@
                         </font>
                     </Label>
 
-                    <ListView fx:id="channelsList"
+                    <ListView fx:id="chatsList"
                               VBox.vgrow="ALWAYS"
                               style="-fx-background-color: transparent;"/>
                 </children>

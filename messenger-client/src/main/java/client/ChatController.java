@@ -6,7 +6,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.util.Callback;
 
 import java.util.List;
 
@@ -15,130 +14,192 @@ public class ChatController implements NetworkListener {
     @FXML private ListView<AbstractMessage> messagesList;
     @FXML private TextField messageInput;
     @FXML private Label currentServerLabel;
-    @FXML private ListView<Chat> chatsList;
-    private Chat currentChat;
+    @FXML private ListView<ChatInfo> chatsList;
 
+    private ChatInfo currentChat;
     private User currentUser;
 
-    // Списки данных, которые автоматически обновляют UI
-    private final ObservableList<String> chatMessages = FXCollections.observableArrayList();
+    // ===== ЕДИНЫЙ ИСТОЧНИК ДАННЫХ =====
+    private final ObservableList<AbstractMessage> messages = FXCollections.observableArrayList();
+    private final ObservableList<ChatInfo> chats = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
 
+        // привязываем один раз
+        messagesList.setItems(messages);
+        chatsList.setItems(chats);
 
-        chatsList.setCellFactory(param -> new ListCell<>() {
+        chatsList.setCellFactory(lv -> new ListCell<>() {
             @Override
-            protected void updateItem(Chat item, boolean empty) {
+            protected void updateItem(ChatInfo item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty || item == null ? null : formatChat(item));
+                setText((empty || item == null) ? null : formatChat(item));
+            }
+        });
+
+        messagesList.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(AbstractMessage item, boolean empty) {
+                super.updateItem(item, empty);
+                setText((empty || item == null) ? null : formatMessage(item));
+            }
+        });
+
+        chatsList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                currentChat = newVal;
+                loadChatHistory(newVal);
             }
         });
     }
 
-    private String formatChat(Chat chat) {
-        return chat.getDisplayName();
+    private String formatMessage(AbstractMessage msg) {
+        return msg.getSenderUsername() + ": " + msg.getDisplayContent();
     }
 
+    private String formatChat(ChatInfo chat) {
+        return switch (chat.getType()) {
+            case "PRIVATE" -> "💬 " + chat.getName();
+            case "CHANNEL" -> "# " + chat.getName();
+            case "SELF" -> "🧍 Self";
+            default -> chat.getName();
+        };
+    }
 
-    // Метод для получения данных пользователя при переходе с экрана логина
+    private void loadChatHistory(ChatInfo chat) {
+        JavaFXClientLauncher.networkClient
+                .commands()
+                .getHistory(chat.getId());
+    }
+
+    public void Init() {
+        System.out.println("INITED");
+        JavaFXClientLauncher.networkClient.commands().getMyChats();
+    }
+
     public void setUser(User user) {
         this.currentUser = user;
         System.out.println("Чат запущен для: " + user.getUsername());
     }
 
+    // ===== SEND MESSAGE =====
     @FXML
     private void handleSendMessage() {
         String text = messageInput.getText().trim();
-        if (text.isEmpty() || currentChannel == null) return;
+        if (text.isEmpty() || currentChat == null) return;
 
-        // Создаем сообщение (используя твою модель)
-        // Здесь можно использовать текстовое сообщение, наследуемое от AbstractMessage
-        // Message msg = new Message(currentUser.getUsername(), text, currentChannel.getId());
+        AbstractMessage msg = new TextMessage(
+                currentChat.getId(),
+                currentUser.getId(),
+                currentUser.getUsername(),
+                text
+        );
 
-        // Отправка через сетевой клиент (раскомментируй, когда подключишь сокеты)
-        // JavaFXClientLauncher.networkClient.sendMessage(msg);
+        JavaFXClientLauncher.networkClient.sendMessage(msg);
 
         messageInput.clear();
-
-        // Временная визуализация (пока нет сервера)
-        Platform.runLater(() -> {
-            // В реальной версии мы будем ждать подтверждения от сервера
-            System.out.println("Отправлено: " + text);
-        });
     }
 
-    private void loadChannelHistory(Channel channel) {
-        // Здесь будет запрос к серверу: networkClient.getHistory(channel.getId());
-        System.out.println("Загрузка истории для канала: " + channel.getName());
-    }
-
-    // --- Реализация NetworkListener ---
-    // Все изменения UI должны быть внутри Platform.runLater, так как сетевой поток - не поток JavaFX!
+    // ===== NETWORK EVENTS =====
 
     @Override
     public void onMessageReceived(AbstractMessage message) {
+        System.out.println("onMessageReceived: " + message);
+
         Platform.runLater(() -> {
-            // Добавляем сообщение в список
-            messagesList.getItems().add(message);
-            messagesList.scrollTo(message); // Прокрутка вниз
+            messages.add(message);
+            messagesList.scrollTo(message);
         });
     }
 
     @Override
-    public void onChannelsListReceived(List<Channel> channels) {
+    public void onChannelHistoryReceived(List<AbstractMessage> history) {
         Platform.runLater(() -> {
-            channelsList.setItems(FXCollections.observableArrayList(channels));
+            messages.setAll(history); // 🔥 вместо setItems()
         });
     }
 
     @Override
-    public void onServersListReceived(List<MessengerServer> servers) {
-    }
+    public void onCommandResponse(CommandResponse payload) {
 
-    @Override
-    public void onLoginSuccess(User user) { /* Уже обработано в MainController */ }
+        System.out.println(payload.getMessage());
+
+        if (!payload.isSuccess()) return;
+
+        Object data = payload.getPayload();
+
+        if (data instanceof List<?> list) {
+
+            if (list.isEmpty()) {
+                Platform.runLater(messages::clear);
+                return;
+            }
+
+            Object first = list.get(0);
+
+            if (first instanceof ChatInfo) {
+
+                List<ChatInfo> result = (List<ChatInfo>) list;
+
+                Platform.runLater(() -> chats.setAll(result));
+            }
+
+            else if (first instanceof AbstractMessage) {
+
+                List<AbstractMessage> history = (List<AbstractMessage>) list;
+
+                Platform.runLater(() -> messages.setAll(history));
+            }
+
+            else {
+                System.out.println("Unknown type: " + first.getClass());
+            }
+        }
+    }
 
     @Override
     public void onError(String msg) {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR, msg);
-            alert.showAndWait();
-        });
+        Platform.runLater(() ->
+                new Alert(Alert.AlertType.ERROR, msg).showAndWait()
+        );
     }
 
-    @Override public void onChannelHistoryReceived(List<AbstractMessage> history) {
-        Platform.runLater(() -> messagesList.setItems(FXCollections.observableArrayList(history)));
-    }
-
+    @Override public void onChannelsListReceived(List<Channel> channels) {}
+    @Override public void onServersListReceived(List<MessengerServer> servers) {}
+    @Override public void onLoginSuccess(User user) {}
     @Override public void onDisconnected(String reason) {
         Platform.runLater(() -> System.out.println("Отключено: " + reason));
     }
 
-    //РОМА ТУТ НОВЫЙ МЕТОД НАДО ИМПЛЕМЕНТИРОВАТЬ КАРОЧЕ РАБОТАй
-    @Override
-    public void onCommandResponse(CommandResponse payload) {
-        throw new UnsupportedOperationException(
-                "COMMAND_RESPONSE received but no handler implemented"
-        );
-    }
-
+    // ===== CREATE CHAT =====
     @FXML
-    private void handleAddServer() {
-        // Создаем простое диалоговое окно для ввода данных
-        TextInputDialog dialog = new TextInputDialog("127.0.0.1");
-        dialog.setTitle("Подключение к серверу");
-        dialog.setHeaderText("Введите адрес нового сервера");
-        dialog.setContentText("IP адрес:");
+    private void handleCreateChat() {
 
-        dialog.showAndWait().ifPresent(ip -> {
-            System.out.println("Попытка подключения к: " + ip);
+        ChoiceDialog<String> typeDialog =
+                new ChoiceDialog<>("PRIVATE", "PRIVATE", "CHANNEL");
 
-            // В будущем здесь будет вызов сетевого клиента:
-            // JavaFXClientLauncher.networkClient.connectToNewServer(ip);
+        typeDialog.setTitle("Создание");
+        typeDialog.setHeaderText("Выберите тип чата");
 
-            // Пока просто выведем статус для теста
-            currentServerLabel.setText("Подключение к " + ip + "...");
+        typeDialog.showAndWait().ifPresent(type -> {
+
+            TextInputDialog inputDialog = new TextInputDialog();
+            inputDialog.setTitle("Создание " + type);
+
+            inputDialog.setHeaderText(type.equals("PRIVATE")
+                    ? "Введите username пользователя"
+                    : "Введите имя канала");
+
+            inputDialog.showAndWait().ifPresent(input -> {
+                if (input.isBlank()) return;
+
+                if (type.equals("PRIVATE")) {
+                    JavaFXClientLauncher.networkClient.commands().createPrivateChat(input);
+                } else {
+                    JavaFXClientLauncher.networkClient.commands().createChannel(input);
+                }
+            });
         });
     }
 }
