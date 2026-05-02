@@ -14,6 +14,11 @@ public class PrivateChat implements Chat {
         this.user1 = user1;
         this.user2 = user2;
     }
+    @Override
+    public String getDisplayName() {
+        User other = user2;
+        return "💬 " + other.getUsername();
+    }
 
     @Override
     public int getId() { return id; }

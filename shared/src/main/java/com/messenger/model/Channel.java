@@ -10,6 +10,11 @@ public class Channel implements Chat{
     private List<AbstractMessage> history = new ArrayList<>();
     public String getName() { return name; }
 
+    @Override
+    public String getDisplayName() {
+        return "# " + name;
+    }
+
     public Channel(int id, String name) {
         this.id = id;
         this.name = name;

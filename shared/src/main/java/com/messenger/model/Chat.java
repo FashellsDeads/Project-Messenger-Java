@@ -8,4 +8,6 @@ public interface Chat {
     void sendMessage(AbstractMessage msg);
     List<AbstractMessage> getHistory();
     Set<User> getParticipants();
+
+    String getDisplayName();
 }

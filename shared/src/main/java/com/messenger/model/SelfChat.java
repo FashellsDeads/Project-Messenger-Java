@@ -17,6 +17,11 @@ public class SelfChat implements Chat {
     }
 
     @Override
+    public String getDisplayName() {
+        return "🧍 Self";
+    }
+
+    @Override
     public int getId() {
         return id;
     }

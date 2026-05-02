@@ -12,8 +12,6 @@ import java.util.List;
 
 public class ChatController implements NetworkListener {
 
-    // Элементы интерфейса из main.fxml
-    @FXML private ListView<Channel> channelsList;
     @FXML private ListView<AbstractMessage> messagesList;
     @FXML private TextField messageInput;
     @FXML private Label currentServerLabel;
@@ -21,23 +19,13 @@ public class ChatController implements NetworkListener {
     private Chat currentChat;
 
     private User currentUser;
-    private Channel currentChannel;
 
     // Списки данных, которые автоматически обновляют UI
     private final ObservableList<String> chatMessages = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
-        // Настраиваем отображение серверов (чтобы видеть название, а не адрес объекта)
 
-        // Настраиваем отображение каналов
-        channelsList.setCellFactory(param -> new ListCell<>() {
-            @Override
-            protected void updateItem(Channel item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? null : "# " + item.getName());
-            }
-        });
 
         chatsList.setCellFactory(param -> new ListCell<>() {
             @Override
@@ -46,22 +34,10 @@ public class ChatController implements NetworkListener {
                 setText(empty || item == null ? null : formatChat(item));
             }
         });
-
-        // Слушатель выбора канала
-        channelsList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                currentChannel = newVal;
-                loadChannelHistory(newVal);
-            }
-        });
     }
 
     private String formatChat(Chat chat) {
-        return switch (chat.getType()) {
-            case DM -> "💬 " + chat.getName();
-            case CHANNEL -> "# " + chat.getName();
-            case SELF -> "🧍 Self";
-        };
+        return chat.getDisplayName();
     }
 
 
