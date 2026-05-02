@@ -1,0 +1,59 @@
+package managers;
+
+import com.messenger.db.UserDAO;
+import com.messenger.model.SelfChat;
+import com.messenger.model.User;
+import com.messenger.model.UserStatus;
+import com.messenger.protocol.IdGenerator;
+
+import java.util.Optional;
+
+public class AuthManager {
+
+    private final ChatManager chatManager;
+    private final UserDAO userDAO;
+
+    public AuthManager(ChatManager chatManager, UserDAO userDAO) {
+        this.chatManager = chatManager;
+        this.userDAO     = userDAO;
+    }
+
+    public User register(String username, String email, String password) throws Validator.ValidationException {
+        Validator.validateRegistration(username, email, password);
+
+        if (userDAO.existsByUsername(username)) {
+            throw new Validator.ValidationException("Имя пользователя уже занято");
+        }
+        if (userDAO.existsByEmail(email)) {
+            throw new Validator.ValidationException("Email уже зарегистрирован");
+        }
+
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPasswordHash(password);
+        user.setStatus(UserStatus.OFFLINE);
+
+        User saved = userDAO.save(user);
+        if (saved == null) {
+            throw new Validator.ValidationException("Ошибка при сохранении пользователя");
+        }
+
+        chatManager.addChat(new SelfChat(IdGenerator.generateId(), saved));
+        return saved;
+    }
+
+    public User login(String email, String password) throws Validator.ValidationException {
+        Validator.validateLogin(email, password);
+
+        User user = userDAO.findByEmail(email);
+        if (user == null || !user.getPassword().equals(password)) {
+            throw new Validator.ValidationException("Неверный email или пароль");
+        }
+        return user;
+    }
+
+    public Optional<User> findByUsername(String username) {
+        return Optional.ofNullable(userDAO.findByUsername(username));
+    }
+}

@@ -1,0 +1,70 @@
+package com.messenger.model;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+public class User implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private int id;
+    private String username;
+    private String email;
+    private String password;
+
+    private UserStatus status;
+    private LocalDateTime lastSeen;
+    private Role role;
+
+    public User() {
+        this.status = UserStatus.OFFLINE;
+    }
+
+    public User(int id, String username, String email, String password) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.status = UserStatus.OFFLINE;
+        this.lastSeen = LocalDateTime.now();
+    }
+
+    public void setId(int id)                   { this.id = id; }
+    public void setEmail(String email)          { this.email = email; }
+    public void setPasswordHash(String hash)    { this.password = hash; }
+    public void setRole(Role role)              { this.role = role; }
+    public Role getRole()                       { return role; }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getLastSeen() {
+        return lastSeen;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
+        this.lastSeen = LocalDateTime.now();
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+}
