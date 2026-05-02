@@ -123,6 +123,7 @@ public class MainController implements NetworkListener {
     public void onCommandResponse(CommandResponse payload) {
 
     }
+
     // --- Вспомогательные методы ---
 
     private void showStatus(String text, boolean isError) {
@@ -137,8 +138,7 @@ public class MainController implements NetworkListener {
 
             ChatController chatController = loader.getController();
             chatController.setUser(user);
-            chatController.Init();
-            JavaFXClientLauncher.networkClient.setListener(chatController);
+
             // JavaFXClientLauncher.networkClient.setListener(chatController);
 
             Stage stage = (Stage) mainActionBtn.getScene().getWindow();

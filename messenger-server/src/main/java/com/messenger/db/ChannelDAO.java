@@ -35,36 +35,6 @@ public class ChannelDAO {
         return null;
     }
 
-    public List<Channel> findByUser(int userId) {
-        String sql = """
-        SELECT c.id, c.name
-        FROM channels c
-        JOIN channel_members cm ON c.id = cm.channel_id
-        WHERE cm.user_id = ?
-    """;
-
-        List<Channel> result = new ArrayList<>();
-        Connection conn = null;
-
-        try {
-            conn = db.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, userId);
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                result.add(mapRow(rs));
-            }
-
-        } catch (SQLException e) {
-            System.err.println("[ChannelDAO] findByUser error: " + e.getMessage());
-        } finally {
-            db.releaseConnection(conn);
-        }
-
-        return result;
-    }
-
     public Channel save(Channel channel) {
         String sql = "INSERT INTO channels (name) VALUES (?)";
         Connection conn = null;

@@ -1,6 +1,9 @@
 package server;
 
-import com.messenger.db.*;
+import com.messenger.db.ChannelDAO;
+import com.messenger.db.ChannelMemberDAO;
+import com.messenger.db.MessageDAO;
+import com.messenger.db.UserDAO;
 import managers.*;
 
 import java.net.ServerSocket;
@@ -14,11 +17,10 @@ public class ChatServer {
     private final UserDAO    userDAO    = new UserDAO();
     private final ChannelMemberDAO channelMemberDAO = new ChannelMemberDAO();
     private final ChannelDAO channelDAO = new ChannelDAO(channelMemberDAO);
-    private final PrivateChatDAO privateChatDAO = new PrivateChatDAO();
     private final MessageDAO messageDAO = new MessageDAO();
 
     // Менеджеры
-    private final ChatManager       chatManager       = new ChatManager(channelDAO, messageDAO,channelMemberDAO,privateChatDAO);
+    private final ChatManager       chatManager       = new ChatManager(channelDAO, messageDAO,channelMemberDAO);
     private final ConnectionManager connectionManager = new ConnectionManager();
     private final MessageDispatcher dispatcher        =
             new MessageDispatcher(chatManager, connectionManager, messageDAO);

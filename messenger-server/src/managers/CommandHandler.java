@@ -13,7 +13,6 @@ public class CommandHandler {
     private final ChatManager       chatManager;
     private final ConnectionManager connectionManager;
 
-
     public CommandHandler(AuthManager authManager,
                           ChatManager chatManager,
                           ConnectionManager connectionManager) {
@@ -36,30 +35,20 @@ public class CommandHandler {
     // ── Чаты ─────────────────────────────────────────────────────────────────
 
     private CommandResponse createPrivateChat(Command cmd, User currentUser) {
-
         String targetName = cmd.getArg(0);
 
         if (targetName.equals(currentUser.getUsername()))
             return CommandResponse.error("Cannot create chat with yourself");
 
         User target = authManager.findByUsername(targetName).orElse(null);
-
         if (target == null)
             return CommandResponse.error("User not found: " + targetName);
 
         var existing = chatManager.findPrivateChat(currentUser.getId(), target.getId());
-
         if (existing.isPresent())
             return new CommandResponse(true, "Chat already exists", existing.get().getId());
 
-        PrivateChat chat = chatManager.createAndSavePrivateChat(
-                currentUser.getId(),
-                target.getId()
-        );
-
-        if (chat == null)
-            return CommandResponse.error("Failed to create private chat");
-
+        PrivateChat chat = new PrivateChat(IdGenerator.generateId(), currentUser, target);
         chatManager.addChat(chat);
 
         // Push второму участнику если онлайн
@@ -130,23 +119,12 @@ public class CommandHandler {
         if (chat == null)
             return CommandResponse.error("Chat not found: " + chatId);
 
-        System.out.println("CHAT PARTICIPANTS:");
-        chat.getParticipants().forEach(u ->
-                System.out.println(u.getId() + " " + u.getUsername())
-        );
-
-        System.out.println("CURRENT USER:");
-        System.out.println(currentUser.getId() + " " + currentUser.getUsername());
-
-
         boolean isMember = chat.getParticipants().stream()
-                .map(User::getId)
-                .anyMatch(id -> id == currentUser.getId());
-        if (chat instanceof PrivateChat pc) {
-            if (!pc.hasUser(currentUser.getId()))
-                return CommandResponse.error("Access denied");
-        }
+                .anyMatch(u -> u.getId() == currentUser.getId());
+        if (!isMember)
+            return CommandResponse.error("Access denied");
 
+        // Теперь через ChatManager — он сам решает память или БД
         List<AbstractMessage> history = chatManager.getHistory(chatId);
         return new CommandResponse(true, "OK", chatId, (Serializable) history);
     }

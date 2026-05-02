@@ -30,18 +30,6 @@ public class User implements Serializable {
         this.lastSeen = LocalDateTime.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User user)) return false;
-        return id == user.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Integer.hashCode(id);
-    }
-
     public void setId(int id)                   { this.id = id; }
     public void setEmail(String email)          { this.email = email; }
     public void setPasswordHash(String hash)    { this.password = hash; }
