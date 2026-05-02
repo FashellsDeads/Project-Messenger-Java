@@ -37,7 +37,7 @@
                         </font>
                     </Label>
 
-                    <ListView fx:id="channelsList"
+                    <ListView fx:id="chatsList"
                               VBox.vgrow="ALWAYS"
                               style="-fx-background-color: transparent;"/>
                 </children>

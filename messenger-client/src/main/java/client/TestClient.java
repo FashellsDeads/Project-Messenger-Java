@@ -207,6 +207,13 @@ public class TestClient implements NetworkListener {
         prompt();
     }
 
+    @Override
+    public void onServerEvent(ServerEvent event) {
+        System.out.println("[EVENT] " + event.getType() + ": " + event.getMessage());
+        prompt();
+    }
+
+
     // =========================
     // UI
     // =========================

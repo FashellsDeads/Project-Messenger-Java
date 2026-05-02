@@ -3,6 +3,7 @@ package managers;
 import com.messenger.db.ChannelDAO;
 import com.messenger.db.ChannelMemberDAO;
 import com.messenger.db.MessageDAO;
+import com.messenger.db.PrivateChatDAO;
 import com.messenger.model.*;
 
 import java.util.*;
@@ -14,17 +15,41 @@ public class ChatManager {
     private final ChannelDAO channelDAO;
     private final MessageDAO messageDAO;
     private final ChannelMemberDAO channelMemberDAO;
+    private final PrivateChatDAO privateChatDAO;
 
     public ChatManager(ChannelDAO channelDAO,
                        MessageDAO messageDAO,
-                       ChannelMemberDAO channelMemberDAO) {
+                       ChannelMemberDAO channelMemberDAO, PrivateChatDAO privateChatDAO) {
         this.channelDAO = channelDAO;
         this.messageDAO = messageDAO;
         this.channelMemberDAO = channelMemberDAO;
+        this.privateChatDAO = privateChatDAO;
     }
 
     public Chat getChat(int chatId) {
-        return chats.get(chatId);
+        Chat chat = chats.get(chatId);
+
+        if (chat != null) return chat;
+
+        // пробуем private chat
+        PrivateChat pc = privateChatDAO.findById(chatId);
+        if (pc != null) {
+            chats.put(chatId, pc);
+            return pc;
+        }
+
+        // channels
+        Channel ch = channelDAO.loadFullChannel(chatId);
+        if (ch != null) {
+            chats.put(chatId, ch);
+            return ch;
+        }
+
+        return null;
+    }
+
+    public PrivateChat createAndSavePrivateChat(int user1Id, int user2Id) {
+        return privateChatDAO.save(user1Id, user2Id);
     }
 
     public void addChat(Chat chat) {
@@ -51,11 +76,6 @@ public class ChatManager {
 
     // История: сначала смотрим в памяти, если пусто — идём в БД
     public List<AbstractMessage> getHistory(int chatId) {
-        Chat chat = chats.get(chatId);
-        if (chat != null && !chat.getHistory().isEmpty()) {
-            return new ArrayList<>(chat.getHistory());
-        }
-        // Загружаем из БД (последние 50 сообщений)
         return messageDAO.findByChannel(chatId, 50);
     }
 
@@ -68,29 +88,34 @@ public class ChatManager {
     }
 
     public List<ChatInfo> getUserChats(int userId) {
+
         List<ChatInfo> result = new ArrayList<>();
-        for (Chat chat : chats.values()) {
-            switch (chat) {
-                case SelfChat sc -> {
-                    if (sc.getParticipants().stream().anyMatch(u -> u.getId() == userId))
-                        result.add(new ChatInfo(sc.getId(), "SELF", "Избранное"));
-                }
-                case PrivateChat pc -> {
-                    if (pc.hasUser(userId)) {
-                        String otherName = pc.getParticipants().stream()
-                                .filter(u -> u.getId() != userId)
-                                .map(User::getUsername)
-                                .findFirst().orElse("Unknown");
-                        result.add(new ChatInfo(pc.getId(), "PRIVATE", otherName));
-                    }
-                }
-                case Channel ch -> {
-                    if (ch.getParticipants().stream().anyMatch(u -> u.getId() == userId))
-                        result.add(new ChatInfo(ch.getId(), "CHANNEL", ch.getName()));
-                }
-                default -> {}
-            }
+
+        // 🔥 сначала каналы из БД — грузим полностью (с участниками!)
+        List<Channel> channels = channelDAO.findByUser(userId);
+
+        for (Channel ch : channels) {
+            result.add(new ChatInfo(ch.getId(), "CHANNEL", ch.getName()));
+            // loadFullChannel загружает и членов канала, иначе getParticipants() вернёт пустой Set
+            Channel full = channelDAO.loadFullChannel(ch.getId());
+            chats.putIfAbsent(ch.getId(), full != null ? full : ch);
         }
+
+        // 🔥 теперь ПРИВАТНЫЕ ЧАТЫ — ВАЖНО: не из chats, а из БД или DAO
+        List<PrivateChat> privateChats = privateChatDAO.findByUser(userId);
+
+        for (PrivateChat pc : privateChats) {
+            User other = pc.getOtherUser(userId);
+
+            result.add(new ChatInfo(
+                    pc.getId(),
+                    "PRIVATE",
+                    other.getUsername()
+            ));
+
+            chats.putIfAbsent(pc.getId(), pc);
+        }
+
         return result;
     }
 }

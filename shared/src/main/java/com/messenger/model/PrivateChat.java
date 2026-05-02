@@ -20,6 +20,12 @@ public class PrivateChat implements Chat {
         return "💬 " + other.getUsername();
     }
 
+    public User getOtherUser(int userId) {
+        if (user1.getId() == userId) return user2;
+        if (user2.getId() == userId) return user1;
+        return null; // на всякий случай
+    }
+
     @Override
     public int getId() { return id; }
 

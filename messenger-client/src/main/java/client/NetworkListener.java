@@ -21,4 +21,7 @@ public interface NetworkListener {
     void onDisconnected(String reason);
 
     void onCommandResponse(CommandResponse payload);
+
+    // События с сервера (user online/offline, chat invite, etc.)
+    void onServerEvent(ServerEvent event);
 }

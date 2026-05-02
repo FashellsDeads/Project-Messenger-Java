@@ -122,6 +122,10 @@ public class NetworkClient {
                 listener.onCommandResponse((CommandResponse) packet.getPayload());
                 break;
 
+            case EVENT:
+                safeCall(() -> listener.onServerEvent((ServerEvent) packet.getPayload()));
+                break;
+
             default:
                 System.out.println("Получен необрабатываемый пакет: " + packet.getType());
         }
