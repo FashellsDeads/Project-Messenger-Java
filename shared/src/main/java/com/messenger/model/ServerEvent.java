@@ -6,7 +6,7 @@ public class ServerEvent implements Serializable {
 
     private final ServerEventType type;
     private final String message;
-    private final int relatedId; // chatId или userId зависит от типа
+    private final int relatedId;
 
     public ServerEvent(ServerEventType type, String message, int relatedId) {
         this.type      = type;

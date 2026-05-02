@@ -8,16 +8,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DAO (Data Access Object) для работы с таблицей users.
- * JDBC: PreparedStatement защищает от SQL-инъекций.
- * OOP: Инкапсулирует всю логику работы с пользователями в БД.
- */
 public class UserDAO {
 
     private final DatabaseManager db = DatabaseManager.getInstance();
 
-    // ─── Найти пользователя по email ─────────────────────────────────────────
     public User findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
         Connection conn = null;
@@ -38,7 +32,6 @@ public class UserDAO {
         return null;
     }
 
-    // ─── Найти пользователя по ID ─────────────────────────────────────────────
     public User findById(int id) {
         String sql = "SELECT * FROM users WHERE id = ?";
         Connection conn = null;
@@ -59,7 +52,6 @@ public class UserDAO {
         return null;
     }
 
-    // ─── Найти пользователя по username ──────────────────────────────────────
     public User findByUsername(String username) {
         String sql = "SELECT * FROM users WHERE username = ?";
         Connection conn = null;
@@ -80,7 +72,6 @@ public class UserDAO {
         return null;
     }
 
-    // ─── Сохранить нового пользователя ───────────────────────────────────────
     public User save(User user) {
         String sql = "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)";
         Connection conn = null;
@@ -107,7 +98,6 @@ public class UserDAO {
         }
     }
 
-    // ─── Обновить статус пользователя ────────────────────────────────────────
     public void updateStatus(int userId, UserStatus status) {
         String sql = "UPDATE users SET status = ? WHERE id = ?";
         Connection conn = null;
@@ -124,7 +114,6 @@ public class UserDAO {
         }
     }
 
-    // ─── Получить всех участников сервера ────────────────────────────────────
     public List<User> findByServer(int serverId) {
         String sql = "SELECT u.*, sm.role FROM users u " +
                      "JOIN server_members sm ON u.id = sm.user_id " +
@@ -139,7 +128,6 @@ public class UserDAO {
 
             while (rs.next()) {
                 User user = mapRow(rs);
-                // Устанавливаем роль из server_members
                 try {
                     user.setRole(Role.valueOf(rs.getString("role")));
                 } catch (Exception ignored) {}
@@ -153,7 +141,6 @@ public class UserDAO {
         return users;
     }
 
-    // ─── Проверить существование email ───────────────────────────────────────
     public boolean existsByEmail(String email) {
         String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
         Connection conn = null;
@@ -171,7 +158,6 @@ public class UserDAO {
         return false;
     }
 
-    // ─── Проверить существование username ────────────────────────────────────
     public boolean existsByUsername(String username) {
         String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
         Connection conn = null;
@@ -189,7 +175,6 @@ public class UserDAO {
         return false;
     }
 
-    // ─── Маппинг строки ResultSet → объект User ───────────────────────────────
     private User mapRow(ResultSet rs) throws SQLException {
         User user = new User();
         user.setId(rs.getInt("id"));

@@ -4,7 +4,7 @@ import com.messenger.model.*;
 import com.messenger.protocol.FxDispatcher;
 import com.messenger.protocol.Packet;
 import com.messenger.protocol.PacketType;
-//import com.messenger.protocol.RegisterRequest; // Предполагаем, что он есть в протоколах
+import com.messenger.protocol.RegisterRequest;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -70,12 +70,9 @@ public class MainController implements NetworkListener {
         showStatus(isRegistrationMode ? "Регистрация..." : "Вход...", false);
 
         if (isRegistrationMode) {
-            // Если в NetworkClient нет метода register, отправляем пакет напрямую
-            //RegisterRequest regReq = new RegisterRequest(login, email, password);
-            //JavaFXClientLauncher.networkClient.sendPacket(new Packet<>(PacketType.REGISTER_REQUEST, regReq));
+            RegisterRequest regReq = new RegisterRequest(login, email, password);
+            JavaFXClientLauncher.networkClient.sendPacket(new Packet<>(PacketType.REGISTER_REQUEST, regReq));
         } else {
-            // Используем существующий метод твоего NetworkClient
-            // В твоем клиенте параметры называются (email, passwordHash)
             JavaFXClientLauncher.networkClient.login(login, password);
         }
     }
@@ -106,7 +103,6 @@ public class MainController implements NetworkListener {
 
     @Override
     public void onLoginSuccess(User user) {
-        // Твой NetworkClient уже делает Platform.runLater, так что здесь просто переход
         System.out.println("Авторизация успешна: " + user.getUsername());
         navigateToMainChat(user);
     }
@@ -140,12 +136,9 @@ public class MainController implements NetworkListener {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/main.fxml"));
             Parent root = loader.load();
 
-            // Передаем данные в контроллер чата
             ChatController chatController = loader.getController();
             chatController.setUser(user);
 
-            // МЕНЯЕМ СЛУШАТЕЛЯ: теперь пакеты должен обрабатывать ChatController
-            // В твоем NetworkClient нужно будет добавить метод для смены listener
             // JavaFXClientLauncher.networkClient.setListener(chatController);
 
             Stage stage = (Stage) mainActionBtn.getScene().getWindow();
@@ -159,7 +152,6 @@ public class MainController implements NetworkListener {
         }
     }
 
-    // Заглушки для методов, которые не используются на экране входа
     @Override public void onMessageReceived(AbstractMessage m) {}
     @Override public void onChannelHistoryReceived(List<AbstractMessage> h) {}
     @Override public void onServersListReceived(List<MessengerServer> s) {}

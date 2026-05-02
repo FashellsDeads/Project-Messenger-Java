@@ -19,19 +19,15 @@ public abstract class AbstractMessage implements Serializable {
         this.timestamp = LocalDateTime.now();
     }
 
-    // Абстрактный метод — каждый наследник реализует
     public abstract String getDisplayContent();
 
-    // Старые геттеры — оставляем как есть
     public int getId()                   { return id; }
     public int getSenderId()             { return senderId; }
     public int getChatId()               { return chatId; }
     public LocalDateTime getTimestamp()  { return timestamp; }
 
-    // Алиас для совместимости с DAO (они используют getChannelId)
     public int getChannelId()            { return chatId; }
 
-    // Новые сеттеры для DAO
     public void setId(int id)                        { this.id = id; }
     public void setTimestamp(LocalDateTime timestamp){ this.timestamp = timestamp; }
     public void setType(MessageType type)            { this.type = type; }
